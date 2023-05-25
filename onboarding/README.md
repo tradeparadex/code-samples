@@ -8,7 +8,7 @@ What this example does:
 * Retrieves a JWT to be used to make requests to private endpoints of the API
 * Makes a request to the private GET /orders endpoint using the JWT
 
-## How to Run
+## How to run
 
 This example can be run directly or with Docker.
 
@@ -39,3 +39,11 @@ docker run -it --rm \
   -e ETHEREUM_PRIVATE_KEY=private_key \
   example
 ```
+
+## Script notes
+
+Refer to the `main` function under [example.py](example.py#L323) for the main flow that consists of:
+
+* Onboarding
+* Getting a JWT
+* Calling a private endpoint
