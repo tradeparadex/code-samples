@@ -1,0 +1,8 @@
+aiohttp == 3.8.3
+starknet.py==0.15.2
+eth-account==0.6.1
+web3==6.0.0b4
+# Pin this package version to fix error on starknet.py:
+# TypeError: check_type() got an unexpected keyword argument 'argname'
+# Could be removed once dependency issue is solved on the package
+typing_extensions==4.3.0
