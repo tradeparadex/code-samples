@@ -24,7 +24,7 @@ To run it directly, you will need [Python 3.9+](https://www.python.org/downloads
 
 ```bash
 pip install -r requirements.txt
-ETHEREUM_PRIVATE_KEY=private_key python example.py
+ETHEREUM_PRIVATE_KEY=private_key python onboarding/example.py
 ```
 
 ### Running with Docker
@@ -42,7 +42,7 @@ docker run -it --rm \
 
 ## Script notes
 
-Refer to the `main` function under [example.py](example.py#L323) for the main flow that consists of:
+Refer to the `main` function under [onboarding/example.py](example.py#L323) for the main flow that consists of:
 
 * Onboarding
 * Getting a JWT
