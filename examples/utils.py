@@ -136,15 +136,15 @@ def network_from_base(base: str) -> Network:
     )
 
 
-def get_account_client(
+def get_account(
     net: Network, chain: Optional[StarknetChainId], account_address: str, account_key: str
 ):
     client = GatewayClient(net=net)
     key_pair = KeyPair.from_private_key(key=int(account_key, 16))
-    account_client = Account(
+    account = Account(
         client=client,
         address=account_address,
         key_pair=key_pair,
         chain=chain,
     )
-    return account_client
+    return account

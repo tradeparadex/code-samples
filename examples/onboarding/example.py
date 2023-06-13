@@ -9,11 +9,11 @@ import aiohttp
 from starknet_py.common import int_from_bytes
 from starknet_py.utils.typed_data import TypedData
 from web3.auto import w3
-from examples.utils import (
+from utils import (
     generate_paradex_account,
     get_paradex_config,
     network_from_base,
-    get_account_client,
+    get_account,
 )
 
 paradex_http_url = "https://api.testnet.paradex.trade/v1"
@@ -49,7 +49,7 @@ async def perform_onboarding(
 ):
     network = network_from_base(paradex_config["starknet_gateway_url"])
     chain = int_from_bytes(paradex_config["starknet_chain_id"].encode())
-    account = get_account_client(
+    account = get_account(
         net=network, chain=chain, account_address=account_address, account_key=private_key
     )
 
@@ -119,7 +119,7 @@ async def get_jwt_token(
 
     network = network_from_base(paradex_config["starknet_gateway_url"])
     chain = int_from_bytes(paradex_config["starknet_chain_id"].encode())
-    account = get_account_client(
+    account = get_account(
         net=network, chain=chain, account_address=account_address, account_key=private_key
     )
 
