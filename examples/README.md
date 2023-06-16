@@ -21,7 +21,7 @@ brew install python3.9 # i.e. ensure python3.9 is available
 python3.9 -m venv .venv # create Python 3.9 virtual env
 source .venv/bin/activate
 pip install -r requirements.txt # (.venv)
-ETHEREUM_PRIVATE_KEY=private_key python onboarding/example.py # (.venv)
+ETHEREUM_PRIVATE_KEY=private_key python onboarding.py # (.venv)
 ```
 
 ### Running with Docker
@@ -36,3 +36,21 @@ docker run -it --rm \
   -e ETHEREUM_PRIVATE_KEY=private_key \
   example
 ```
+
+## Onboarding and Authentication
+
+### Overview
+
+What this example does:
+
+* Generates and onboards a new Paradex account based off your Ethereum private key
+* Retrieves a JWT to be used to make requests to private endpoints of the API
+* Makes a request to the private GET /orders endpoint using the JWT
+
+### Script notes
+
+Refer to the `main` function under [onboarding.py](onboarding.py#L323) for the main flow that consists of:
+
+* Onboarding
+* Getting a JWT
+* Calling a private endpoint
