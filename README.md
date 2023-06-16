@@ -2,4 +2,6 @@
 
 Collection of Paradex code samples and snippets
 
-* [Onboarding and Authentication](examples/onboarding/README.md)
+## Examples
+
+* [Onboarding and Authentication](examples/README.md#onboarding-and-authentication)
