@@ -22,7 +22,7 @@ mock_order = Order(
 os.environ["PARADEX_ENVIRONMENT"] = "local"
 
 config = ApiConfig()
-config.paradex_http_url = "https://api.nightly.paradex.trade/v1"
+config.paradex_http_url = "https://api.testnet.paradex.trade/v1"
 
 loop = asyncio.get_event_loop()
 config.paradex_config = loop.run_until_complete(get_paradex_config(config.paradex_http_url))

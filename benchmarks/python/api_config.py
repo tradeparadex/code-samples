@@ -20,18 +20,18 @@ class ApiConfig(ApiConfigInterface):
 
         # Paradigm Connection URLs
 
-        self.paradex_environment = os.getenv('PARADEX_ENVIRONMENT', 'NIGHTLY')
+        self.paradex_environment = os.getenv('PARADEX_ENVIRONMENT', 'TESTNET')
 
-        def local_to_nightly(env: str) -> str:
+        def local_to_testnet(env: str) -> str:
             if env == 'local':
-                return 'nightly'
+                return 'testnet'
             return env
 
         self.paradex_ws_url = (
-            f'wss://ws.api.{local_to_nightly(self.paradex_environment.lower())}.paradex.trade/v1'
+            f'wss://ws.api.{local_to_testnet(self.paradex_environment.lower())}.paradex.trade/v1'
         )
         self.paradex_http_url = (
-            f'https://api.{local_to_nightly(self.paradex_environment.lower())}.paradex.trade/v1'
+            f'https://api.{local_to_testnet(self.paradex_environment.lower())}.paradex.trade/v1'
         )
 
         # Hex of the account contract address
