@@ -92,13 +92,13 @@ as defined in [starkware/starknet/abi.py](https://github.com/starkware-libs/cair
 
 > More details: [Account keys and addresses derivation standard](https://community.starknet.io/t/account-keys-and-addresses-derivation-standard/1230/1)
 
-```json
+```js
 message = { "action": "STARK Key" }
 ```
 
 Types:
 
-```json
+```js
 EIP712Domain = [
   { "name": "name", "type": "string" },
   { "name": "version", "type": "string" },
@@ -114,13 +114,13 @@ Constant = [
 
 Message for L2 (StarkNet) onboarding, used to send message hash to get JWT token.
 
-```json
+```js
 message = { "action": "Onboarding" }
 ```
 
 Types:
 
-```json
+```js
 Constant = [
   { "name": "action", "type": "felt" }
 ]
@@ -128,7 +128,7 @@ Constant = [
 
 **Authentication (L2 Message):**
 
-```json
+```js
 message = {
   "method": "POST",
   "path": "/v1/auth",
@@ -140,7 +140,7 @@ message = {
 
 Types:
 
-```json
+```js
 Request = [
   { "name": "method", "type": "felt" },
   { "name": "path", "type": "felt" },
@@ -152,7 +152,7 @@ Request = [
 
 **New Order (L2 Message):**
 
-```json
+```js
 message = {
   "timestamp": UNIX_TIMESTAMP,
   "market": MARKET,
@@ -165,7 +165,7 @@ message = {
 
 Types:
 
-```json
+```js
 Order = [
   {  "name": "timestamp", "type": "felt" },
   { "name": "market", "type": "felt" },
@@ -178,10 +178,14 @@ Order = [
 
 **Common Types (L2):**
 
-```json
+```js
 StarkNetDomain = [
   { "name": "name", "type": "felt" },
   { "name": "chainId", "type": "felt" },
   { "name": "version", "type": "felt" }
 ]
 ```
+
+## Message Hash Example
+
+A complete python example with onboarding message payload can be found in [`message_hash.py`](message_hash.py):
