@@ -14,10 +14,9 @@ Remember to replace the value of `ETHEREUM_PRIVATE_KEY` below with your own priv
 
 All commands below are to be run from `examples` directory.
 
-To run it directly, you will need [Python 3.9+](https://www.python.org/downloads/).
+To run it directly, ensure [Python 3.9+](https://www.python.org/downloads/) is installed.
 
 ```bash
-brew install python3.9 # i.e. ensure python3.9 is available
 python3.9 -m venv .venv # create Python 3.9 virtual env
 source .venv/bin/activate
 pip install -r requirements.txt # (.venv)
