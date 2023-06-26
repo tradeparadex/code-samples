@@ -48,8 +48,43 @@ What this example does:
 
 ### Script notes
 
-Refer to the `main` function under [onboarding.py](onboarding.py#L323) for the main flow that consists of:
+Refer to the `main` function under [onboarding.py](onboarding.py#L180) for the main flow that consists of:
 
 * Onboarding
 * Getting a JWT
 * Calling a private endpoint
+
+## Withdraw
+
+### Overview
+
+What this example does:
+
+* Withdraws from Paradex (Paraclear Contract) to L1 token bridge contract
+* Waits for transaction to be accepted on L1 (Ethereum)
+* Withdraw from L1 token bridge contract to L1 wallet
+
+### Script notes
+
+Refer to the `main` function under [withdraw.py](withdraw.py#L111) for the main flow that consists of:
+
+* Withdraw from Paradex (Paraclear Contract)
+* Wait for transaction to be accepted on L1
+  * *Note: Poll for transaction receipt can take up to 12 hours*
+* Withdraw from L1 bridge
+
+*Note: L1 gas fees may fluctuate, adjust `maxFeePerGas` and `maxPriorityFeePerGas` accordingly*
+
+#### Ethereum (L1) Contract ABIs
+
+ABI for any L1 contract can be sourced from Etherscan. Steps:
+
+1. Go to [Goerli Etherscan](https://goerli.etherscan.io/)
+2. Search for contract address (or `https://goerli.etherscan.io/address/<address>`)
+3. Click on `Contract` tab
+4. Click on `Read as Proxy` tab
+5. Click on ABI for the implementation contract link
+6. Navigate to `Contract ABI` section
+7. Save the ABI to a JSON file
+
+*Note: Contracts must be deployed with source code verification on Etherscan.*
