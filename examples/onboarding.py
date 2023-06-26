@@ -8,12 +8,12 @@ from typing import Dict, List
 import aiohttp
 from starknet_py.common import int_from_bytes
 from starknet_py.utils.typed_data import TypedData
-from web3.auto import w3
 from utils import (
     generate_paradex_account,
+    get_account,
+    get_l1_eth_account,
     get_paradex_config,
     network_from_base,
-    get_account,
 )
 
 paradex_http_url = "https://api.testnet.paradex.trade/v1"
@@ -47,13 +47,10 @@ async def perform_onboarding(
     private_key: str,
     ethereum_account: str,
 ):
-    network = network_from_base(paradex_config["starknet_gateway_url"])
-    chain = int_from_bytes(paradex_config["starknet_chain_id"].encode())
-    account = get_account(
-        net=network, chain=chain, account_address=account_address, account_key=private_key
-    )
+    chain_id = int_from_bytes(paradex_config["starknet_chain_id"].encode())
+    account = get_account(account_address, private_key, paradex_config)
 
-    message = build_onboarding_message(chain)
+    message = build_onboarding_message(chain_id)
     sig = account.sign_message(message)
 
     headers = {
@@ -117,15 +114,12 @@ async def get_jwt_token(
 ) -> str:
     token = ""
 
-    network = network_from_base(paradex_config["starknet_gateway_url"])
-    chain = int_from_bytes(paradex_config["starknet_chain_id"].encode())
-    account = get_account(
-        net=network, chain=chain, account_address=account_address, account_key=private_key
-    )
+    chain_id = int_from_bytes(paradex_config["starknet_chain_id"].encode())
+    account = get_account(account_address, private_key, paradex_config)
 
     now = int(time.time())
     expiry = now + 24 * 60 * 60
-    message = build_auth_message(chain, now, expiry)
+    message = build_auth_message(chain_id, now, expiry)
     hash = TypedData.from_dict(message).message_hash(account.address)
     sig = account.sign_message(message)
 
@@ -185,19 +179,14 @@ async def get_open_orders(
 
 async def main(eth_private_key_hex: str) -> None:
     # Initialize Ethereum account
-    w3.eth.account.enable_unaudited_hdwallet_features()
-    eth_account = w3.eth.account.from_key(eth_private_key_hex)
-    eth_account_address, eth_account_private_key_hex = (
-        eth_account.address,
-        eth_account.privateKey.hex(),
-    )
+    _, eth_account = get_l1_eth_account(eth_private_key_hex)
 
     # Load Paradex config
     paradex_config = await get_paradex_config()
 
     # Generate Paradex account (only local)
     paradex_account_address, paradex_account_private_key_hex = generate_paradex_account(
-        paradex_config, eth_account_private_key_hex
+        paradex_config, eth_account.key.hex()
     )
 
     # Onboard generated Paradex account
@@ -207,7 +196,7 @@ async def main(eth_private_key_hex: str) -> None:
         paradex_http_url,
         paradex_account_address,
         paradex_account_private_key_hex,
-        eth_account_address,
+        eth_account.address,
     )
 
     # Get a JWT token to interact with private endpoints

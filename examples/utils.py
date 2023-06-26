@@ -1,18 +1,39 @@
+import aiohttp
+import asyncio
 import hashlib
 import logging
-from typing import Dict, Optional, Tuple
+import random
+import re
+from enum import Enum
+from typing import Callable, Dict, Optional, Tuple, Literal
 
-import aiohttp
 from eth_account.messages import encode_structured_data
+from eth_account.signers.local import LocalAccount
+from web3.auto.infura.goerli import Web3, w3
+from web3.middleware import construct_sign_and_send_raw_middleware
+
+from starknet_py.common import int_from_bytes
+from starknet_py.constants import RPC_INVALID_MESSAGE_SELECTOR_ERROR
 from starknet_py.hash.address import compute_address
 from starknet_py.hash.selector import get_selector_from_name
 from starknet_py.net.account.account import Account
+from starknet_py.net.client import Client
+from starknet_py.net.client_errors import ClientError
+from starknet_py.net.client_models import Call, Hash, TransactionStatus
 from starknet_py.net.gateway_client import GatewayClient
+from starknet_py.net.models import Address
 from starknet_py.net.models import StarknetChainId
 from starknet_py.net.networks import CustomGatewayUrls, Network
 from starknet_py.net.signer.stark_curve_signer import KeyPair
+from starknet_py.proxy.contract_abi_resolver import ProxyConfig
+from starknet_py.proxy.proxy_check import ArgentProxyCheck, OpenZeppelinProxyCheck, ProxyCheck
+from starknet_py.transaction_exceptions import (
+    TransactionFailedError,
+    TransactionNotReceivedError,
+    TransactionRejectedError,
+)
 from starkware.crypto.signature.signature import EC_ORDER
-from web3.auto import w3
+
 
 paradex_http_url = "https://api.testnet.paradex.trade/v1"
 
@@ -55,7 +76,6 @@ def build_stark_key_message(chain_id: int):
 
 
 def sign_stark_key_message(eth_private_key: int, stark_key_message) -> str:
-    w3.eth.account.enable_unaudited_hdwallet_features()
     encoded = encode_structured_data(primitive=stark_key_message)
     signed = w3.eth.account.sign_message(encoded, eth_private_key)
     return signed.signature.hex()
@@ -136,11 +156,17 @@ def network_from_base(base: str) -> Network:
     )
 
 
-def get_account(
-    net: Network, chain: Optional[StarknetChainId], account_address: str, account_key: str
-):
+def get_chain_id(chain_id: str):
+    class CustomStarknetChainId(Enum):
+        PRIVATE_TESTNET = int_from_bytes(chain_id.encode())
+    return CustomStarknetChainId.PRIVATE_TESTNET
+
+
+def get_account(account_address: str, account_key: str, paradex_config: dict):
+    net = network_from_base(paradex_config["starknet_gateway_url"])
     client = GatewayClient(net=net)
-    key_pair = KeyPair.from_private_key(key=int(account_key, 16))
+    key_pair = KeyPair.from_private_key(key=hex_to_int(account_key))
+    chain = get_chain_id(paradex_config["starknet_chain_id"])
     account = Account(
         client=client,
         address=account_address,
@@ -148,3 +174,114 @@ def get_account(
         chain=chain,
     )
     return account
+
+
+def get_random_max_fee(start=1e18, end=1e19) -> int:
+    return random.randint(start, end)
+
+
+def get_proxy_config():
+    return ProxyConfig(
+        max_steps=5,
+        proxy_checks=[StarkwareETHProxyCheck(), ArgentProxyCheck(), OpenZeppelinProxyCheck()],
+    )
+
+
+class StarkwareETHProxyCheck(ProxyCheck):
+    async def implementation_address(self, address: Address, client: Client) -> Optional[int]:
+        return await self.get_implementation(
+            address=address,
+            client=client,
+            get_class_func=client.get_class_hash_at,
+            regex_err_msg=r"(is not deployed)",
+        )
+
+    async def implementation_hash(self, address: Address, client: Client) -> Optional[int]:
+        return await self.get_implementation(
+            address=address,
+            client=client,
+            get_class_func=client.get_class_by_hash,
+            regex_err_msg=r"(is not declared)",
+        )
+
+    @staticmethod
+    async def get_implementation(
+        address: Address, client: Client, get_class_func: Callable, regex_err_msg: str
+    ) -> Optional[int]:
+        call = StarkwareETHProxyCheck._get_implementation_call(address=address)
+        err_msg = r"(Entry point 0x[0-9a-f]+ not found in contract)|" + regex_err_msg
+        try:
+            (implementation,) = await client.call_contract(call=call)
+            await get_class_func(implementation)
+        except ClientError as err:
+            if (
+                re.search(err_msg, err.message, re.IGNORECASE)
+                or err.code == RPC_INVALID_MESSAGE_SELECTOR_ERROR
+            ):
+                return None
+            raise err
+        return implementation
+
+    @staticmethod
+    def _get_implementation_call(address: Address) -> Call:
+        return Call(
+            to_addr=address,
+            selector=get_selector_from_name("implementation"),
+            calldata=[],
+        )
+
+
+# Forked from https://github.com/software-mansion/starknet.py/blob/development/starknet_py/net/client.py#L134
+# Method tweaked to wait for `ACCEPTED_ON_L1` status
+async def wait_for_tx(
+    client: Client, tx_hash: Hash, check_interval=5
+) -> Tuple[int, TransactionStatus]:
+    """
+    Awaits for transaction to get accepted or at least pending by polling its status
+
+    :param client: Instance of Client
+    :param tx_hash: Transaction's hash
+    :param check_interval: Defines interval between checks
+    :return: Tuple containing block number and transaction status
+    """
+    if check_interval <= 0:
+        raise ValueError("Argument check_interval has to be greater than 0.")
+
+    first_run = True
+    try:
+        while True:
+            result = await client.get_transaction_receipt(tx_hash=tx_hash)
+            status = result.status
+
+            if status == TransactionStatus.ACCEPTED_ON_L1:
+                assert result.block_number is not None
+                return result.block_number, status
+            elif status == TransactionStatus.REJECTED:
+                raise TransactionRejectedError(
+                    message=result.rejection_reason,
+                )
+            elif status == TransactionStatus.NOT_RECEIVED:
+                if not first_run:
+                    raise TransactionNotReceivedError()
+            elif status != TransactionStatus.RECEIVED:
+                # This will never get executed with current possible transactions statuses
+                raise TransactionFailedError(
+                    message=result.rejection_reason,
+                )
+
+            first_run = False
+            await asyncio.sleep(check_interval)
+    except asyncio.CancelledError as exc:
+        raise TransactionNotReceivedError from exc
+
+
+def get_l1_eth_account(eth_private_key_hex: str) -> Tuple[Web3, LocalAccount]:
+    w3.eth.account.enable_unaudited_hdwallet_features()
+    account: LocalAccount = w3.eth.account.from_key(eth_private_key_hex)
+    w3.eth.default_account = account.address
+    w3.middleware_onion.add(construct_sign_and_send_raw_middleware(account))
+    return w3, account
+
+
+def hex_to_int(val: str):
+    return int(val, 16)

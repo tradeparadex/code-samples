@@ -6,14 +6,17 @@ import traceback
 
 from crypto_cpp_py.cpp_bindings import cpp_hash, get_cpp_lib_file
 from typing import cast, Sequence, List, Union
-from web3.auto import w3
 
 from starknet_py.cairo.felt import encode_shortstring
 from starknet_py.common import int_from_bytes
 from starknet_py.hash.selector import get_selector_from_name
 from starkware.cairo.lang.vm.crypto import pedersen_hash as default_hash
 
-from utils import generate_paradex_account, get_paradex_config
+from utils import (
+    generate_paradex_account,
+    get_l1_eth_account,
+    get_paradex_config,
+)
 
 # This is a very stripped down version of message hashing
 # Added notes around the code to explain what's going on
@@ -32,11 +35,8 @@ types = {
 }
 
 async def main(eth_private_key_hex: str) -> None:
-    eth_account = w3.eth.account.from_key(eth_private_key_hex)
-    _, eth_account_private_key_hex = (
-        eth_account.address,
-        eth_account.privateKey.hex(),
-    )
+    # Initialize Ethereum account
+    _, eth_account = get_l1_eth_account(eth_private_key_hex)
 
     # Load Paradex config
     paradex_config = await get_paradex_config()
@@ -44,7 +44,7 @@ async def main(eth_private_key_hex: str) -> None:
 
     # Generate Paradex account (only local)
     account_address, _ = generate_paradex_account(
-        paradex_config, eth_account_private_key_hex
+        paradex_config, eth_account.key.hex()
     )
 
     print("--------------------")
