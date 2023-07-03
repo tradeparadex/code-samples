@@ -48,12 +48,12 @@ func (o *AuthPayload) FmtDefinitionEncoding(field string) (fmtEnc []*big.Int) {
 }
 
 type OrderPayload struct {
-	Timestamp int64
-	Market    string
-	Side      string
-	OrderType string
-	Size      string
-	Price     string
+	Timestamp int64  // Unix timestamp in milliseconds when signature was created
+	Market    string // Market name - ETH-USD-PERP
+	Side      string // 1 for buy, 2 for sell
+	OrderType string // MARKET or LIMIT
+	Size      string // Size scaled by 1e8. 0.1 ETH = 10000000
+	Price     string // Price scaled by 1e8. 0 for market orders
 }
 
 func (o *OrderPayload) FmtDefinitionEncoding(field string) (fmtEnc []*big.Int) {
