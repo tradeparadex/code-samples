@@ -108,7 +108,7 @@ def add_price_offset(price: Decimal, offset: Decimal, side: OrderSide) -> Decima
 
 
 def calc_price_offset(target_price: Decimal, price: Decimal, side: OrderSide) -> Decimal:
-    """Calcualtes by how much price is more passive than target_price.
+    """Calculates by how much price is more passive than target_price.
         Or how much to make price more aggressive to match target_price
     i.e. side = Buy , target_price = 100, price = 99, returns 1
     i.e. side = Buy , target_price = 100, price = 101, returns -1

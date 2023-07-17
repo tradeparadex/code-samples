@@ -13,7 +13,6 @@ from utils import (
     get_account,
     get_l1_eth_account,
     get_paradex_config,
-    network_from_base,
 )
 
 paradex_http_url = "https://api.testnet.paradex.trade/v1"
