@@ -45,9 +45,9 @@ func GetEthereumAccount() (string, string) {
 
 // TODO: Generate Paradex account from Ethereum private key
 func GenerateParadexAccount(config SystemConfigResponse, ethPrivateKey string) (string, string, string) {
-	dexAccountAddress := os.Getenv("PARADEX_ACCOUNT_ADDRESS")
 	dexPrivateKey := os.Getenv("PARADEX_PRIVATE_KEY")
 	dexPublicKey := os.Getenv("PARADEX_PUBLIC_KEY")
+	dexAccountAddress := ComputeAddress(config, dexPublicKey)
 	return dexPrivateKey, dexPublicKey, dexAccountAddress
 }
 
