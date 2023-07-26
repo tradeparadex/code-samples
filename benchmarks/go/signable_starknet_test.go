@@ -14,8 +14,9 @@ func BenchmarkSignSingleOrder(b *testing.B) {
 		Timestamp: 1684815490129,
 		Market:    "ETH-USD-PERP",
 		Side:      "SELL",
-		OrderType: "MARKET",
-		Size:      "45430000",
+		OrderType: "LIMIT",
+		Size:      "2000000000",   // 20 * 10^8
+		Price:     "190000000000", // 1900 * 10^8
 	}
 	priv, _ := caigo.Curve.GetRandomPrivateKey()
 
