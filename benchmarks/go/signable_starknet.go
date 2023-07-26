@@ -63,7 +63,7 @@ func (o *OrderPayload) FmtDefinitionEncoding(field string) (fmtEnc []*big.Int) {
 	case "market":
 		fmtEnc = append(fmtEnc, types.StrToFelt(o.Market).Big())
 	case "side":
-		fmtEnc = append(fmtEnc, types.StrToFelt(OrderSide(o.Side).ChainId()).Big())
+		fmtEnc = append(fmtEnc, types.StrToFelt(OrderSide(o.Side).Get()).Big())
 	case "orderType":
 		fmtEnc = append(fmtEnc, types.StrToFelt(o.OrderType).Big())
 	case "size":
@@ -149,7 +149,7 @@ func NewVerificationTypedData(vType VerificationType, chainId string) (*caigo.Ty
 	if vType == VerificationTypeOrder {
 		return NewTypedData(orderTypes(), domain(chainId), "Order")
 	}
-	return nil, errors.New("Invalid validation type")
+	return nil, errors.New("invalid validation type")
 }
 
 // NewTypedData returns a caigo typed data that
@@ -163,7 +163,7 @@ func NewTypedData(types map[string]caigo.TypeDef, domain *caigo.Domain, pType st
 	)
 
 	if err != nil {
-		return nil, errors.New("Failed to create typed data with caigo")
+		return nil, errors.New("failed to create typed data with caigo")
 	}
 
 	return &typedData, nil

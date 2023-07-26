@@ -12,7 +12,7 @@ import (
 func BenchmarkSignSingleOrder(b *testing.B) {
 	orderP := &OrderPayload{
 		Timestamp: 1684815490129,
-		Market:    "BTC-USD-PERP",
+		Market:    "ETH-USD-PERP",
 		Side:      "SELL",
 		OrderType: "MARKET",
 		Size:      "45430000",

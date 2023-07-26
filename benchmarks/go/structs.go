@@ -19,7 +19,7 @@ func (s OrderSide) String() string {
 	return string(s)
 }
 
-func (s OrderSide) ChainId() string {
+func (s OrderSide) Side() string {
 	if s == ORDER_SIDE_BUY {
 		return "1"
 	} else {

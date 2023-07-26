@@ -153,7 +153,7 @@ def order_sign_message(chainId: int, o: Order):
                     "name": "timestamp",
                     "type": "felt",
                 },  # Time of signature request in ms since epoch; Acts as a nonce;
-                {"name": "market", "type": "felt"},  # E.g.: "BTC-USD-PERP"
+                {"name": "market", "type": "felt"},  # E.g.: "ETH-USD-PERP"
                 {"name": "side", "type": "felt"},  # Buy or Sell
                 {"name": "orderType", "type": "felt"},  # Limit or Market
                 {"name": "size", "type": "felt"},  # Quantum value with 8 decimals;

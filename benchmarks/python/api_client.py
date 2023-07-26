@@ -46,7 +46,7 @@ async def sign_request(
     paradex_maker_secret_key: str, method: str, path: str, body: Dict
 ) -> Tuple[int, bytes]:
     """
-    Creates the required signature neccessary
+    Creates the required signature necessary
     as apart of all RESToverHTTP requests with Paradigm.
     """
     _secret_key: bytes = paradex_maker_secret_key.encode("utf-8")
