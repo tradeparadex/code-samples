@@ -24,6 +24,9 @@ func BenchmarkSignSingleOrder(b *testing.B) {
 	require.NoError(b, err)
 	td, err := NewVerificationTypedData(VerificationTypeOrder, "PRIVATE_SN_POTC_GOERLI")
 	require.NoError(b, err)
+	// x is the Public Key
+	// Replace x with account address
+	// Compute using `ComputeAddress` method in `examples/go/utils.go:40`
 	hash, err := td.GetMessageHash(x, orderP, caigo.StarkCurve{})
 	require.NoError(b, err)
 	var r, s *big.Int
