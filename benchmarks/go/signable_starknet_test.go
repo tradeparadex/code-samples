@@ -14,8 +14,9 @@ func BenchmarkSignSingleOrder(b *testing.B) {
 		Timestamp: 1684815490129,
 		Market:    "ETH-USD-PERP",
 		Side:      "SELL",
-		OrderType: "MARKET",
-		Size:      "45430000",
+		OrderType: "LIMIT",
+		Size:      "2000000000",   // 20 * 10^8
+		Price:     "190000000000", // 1900 * 10^8
 	}
 	priv, _ := caigo.Curve.GetRandomPrivateKey()
 
@@ -23,6 +24,9 @@ func BenchmarkSignSingleOrder(b *testing.B) {
 	require.NoError(b, err)
 	td, err := NewVerificationTypedData(VerificationTypeOrder, "PRIVATE_SN_POTC_GOERLI")
 	require.NoError(b, err)
+	// x is the Public Key
+	// Replace x with account address
+	// Compute using `ComputeAddress` method in `examples/go/utils.go:40`
 	hash, err := td.GetMessageHash(x, orderP, caigo.StarkCurve{})
 	require.NoError(b, err)
 	var r, s *big.Int

@@ -43,11 +43,13 @@ func GetEthereumAccount() (string, string) {
 	return ethPrivateKey, ethAddress
 }
 
-// TODO: Generate Paradex account from Ethereum private key
+// TODO: Generate Paradex private key from Ethereum private key
 func GenerateParadexAccount(config SystemConfigResponse, ethPrivateKey string) (string, string, string) {
-	dexAccountAddress := os.Getenv("PARADEX_ACCOUNT_ADDRESS")
 	dexPrivateKey := os.Getenv("PARADEX_PRIVATE_KEY")
-	dexPublicKey := os.Getenv("PARADEX_PUBLIC_KEY")
+	dexPrivateKeyBN := types.HexToBN(dexPrivateKey)
+	dexPublicKeyBN, _, _ := caigo.Curve.PrivateToPoint(dexPrivateKeyBN)
+	dexPublicKey := types.BigToHex(dexPublicKeyBN)
+	dexAccountAddress := ComputeAddress(config, dexPublicKey)
 	return dexPrivateKey, dexPublicKey, dexAccountAddress
 }
 

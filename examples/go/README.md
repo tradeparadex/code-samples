@@ -11,9 +11,7 @@ You will need a private key of the Ethereum account that will control your Parad
 ### Required environment variables
 
 * `ETHEREUM_PRIVATE_KEY`
-* `PARADEX_ACCOUNT_ADDRESS`
 * `PARADEX_PRIVATE_KEY`
-* `PARADEX_PUBLIC_KEY`
 
 ### Running directly
 
