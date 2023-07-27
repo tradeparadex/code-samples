@@ -12,7 +12,6 @@ You will need a private key of the Ethereum account that will control your Parad
 
 * `ETHEREUM_PRIVATE_KEY`
 * `PARADEX_PRIVATE_KEY`
-* `PARADEX_PUBLIC_KEY`
 
 ### Running directly
 
