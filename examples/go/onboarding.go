@@ -128,7 +128,6 @@ func GetJwtToken(
 	req.Header.Set("Content-Type", CONTENT_TYPE)
 	req.Header.Add("PARADEX-STARKNET-ACCOUNT", dexAccountAddress)
 	req.Header.Add("PARADEX-STARKNET-SIGNATURE", GetSignatureStr(r, s))
-	req.Header.Add("PARADEX-STARKNET-MESSAGE-HASH", messageHash.String())
 	req.Header.Add("PARADEX-TIMESTAMP", timestampStr)
 	req.Header.Add("PARADEX-SIGNATURE-EXPIRATION", expirationStr)
 
