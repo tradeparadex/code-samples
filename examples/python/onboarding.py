@@ -125,7 +125,6 @@ async def get_jwt_token(
     headers: Dict = {
         "PARADEX-STARKNET-ACCOUNT": account_address,
         "PARADEX-STARKNET-SIGNATURE": f'["{sig[0]}","{sig[1]}"]',
-        "PARADEX-STARKNET-MESSAGE-HASH": hex(hash),
         "PARADEX-TIMESTAMP": str(now),
         "PARADEX-SIGNATURE-EXPIRATION": str(expiry),
     }
