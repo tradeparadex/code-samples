@@ -18,7 +18,7 @@ class ApiConfig(ApiConfigInterface):
         Load the configuration from env.
         """
 
-        # Paradigm Connection URLs
+        # Paradex Connection URLs
 
         self.paradex_environment = os.getenv('PARADEX_ENVIRONMENT', 'TESTNET')
 
