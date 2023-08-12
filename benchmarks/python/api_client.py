@@ -47,7 +47,7 @@ async def sign_request(
 ) -> Tuple[int, bytes]:
     """
     Creates the required signature necessary
-    as apart of all RESToverHTTP requests with Paradigm.
+    as apart of all RESToverHTTP requests with Paradex.
     """
     _secret_key: bytes = paradex_maker_secret_key.encode("utf-8")
     _method: bytes = method.encode("utf-8")
@@ -71,7 +71,7 @@ async def create_rest_headers(
 ) -> Dict:
     """
     Creates the required headers to authenticate
-    Paradigm RESToverHTTP requests.
+    Paradex RESToverHTTP requests.
     """
     # timestamp, signature = await sign_request(
     #     paradex_maker_secret_key=paradex_maker_secret_key,
@@ -81,8 +81,8 @@ async def create_rest_headers(
     #     )
 
     headers: Dict = {
-        # 'Paradigm-API-Timestamp': timestamp.decode('utf-8'),
-        # 'Paradigm-API-Signature': signature.decode('utf-8'),
+        # 'Paradex-API-Timestamp': timestamp.decode('utf-8'),
+        # 'Paradex-API-Signature': signature.decode('utf-8'),
         "Authorization": f"Bearer {paradex_jwt}"
     }
 
