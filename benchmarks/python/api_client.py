@@ -47,7 +47,7 @@ async def sign_request(
 ) -> Tuple[int, bytes]:
     """
     Creates the required signature necessary
-    as apart of all RESToverHTTP requests with Paradigm.
+    as apart of all RESToverHTTP requests with Paradex.
     """
     _secret_key: bytes = paradex_maker_secret_key.encode("utf-8")
     _method: bytes = method.encode("utf-8")
@@ -71,7 +71,7 @@ async def create_rest_headers(
 ) -> Dict:
     """
     Creates the required headers to authenticate
-    Paradigm RESToverHTTP requests.
+    Paradex RESToverHTTP requests.
     """
     # timestamp, signature = await sign_request(
     #     paradex_maker_secret_key=paradex_maker_secret_key,
@@ -81,8 +81,8 @@ async def create_rest_headers(
     #     )
 
     headers: Dict = {
-        # 'Paradigm-API-Timestamp': timestamp.decode('utf-8'),
-        # 'Paradigm-API-Signature': signature.decode('utf-8'),
+        # 'Paradex-API-Timestamp': timestamp.decode('utf-8'),
+        # 'Paradex-API-Signature': signature.decode('utf-8'),
         "Authorization": f"Bearer {paradex_jwt}"
     }
 
@@ -303,7 +303,7 @@ def check_token_expiry(status_code: int, response: Dict) -> None:
 
 async def post_order_payload(paradex_http_url: str, paradex_jwt: str, payload: dict) -> dict:
     """
-    Paradigm RESToverHTTP endpoint.
+    Paradex RESToverHTTP endpoint.
     [POST] /orders
     """
     method: str = "POST"
@@ -381,7 +381,7 @@ async def get_markets(
     paradex_jwt: str,
 ) -> List[Dict]:
     """
-    Paradigm RESToverHTTP endpoint.
+    Paradex RESToverHTTP endpoint.
     [GET] /markets
     """
     logging.info("Getting markets...")
@@ -416,7 +416,7 @@ async def get_paradex_config(
     paradex_http_url: str,
 ) -> Dict:
     """
-    Paradigm RESToverHTTP endpoint.
+    Paradex RESToverHTTP endpoint.
     [GET] /config
     """
     logging.info("Getting config...")
@@ -440,7 +440,7 @@ async def get_paradex_config(
 # JSON-RPCoverWebsocket Interface
 async def send_heartbeat_id(websocket: websockets.WebSocketClientProtocol, id: int) -> None:
     """
-    Sends a Heartbeat to keep the Paradigm WebSocket connection alive.
+    Sends a Heartbeat to keep the Paradex WebSocket connection alive.
     """
     await websocket.send(json.dumps({"id": id, "jsonrpc": "2.0", "method": "heartbeat"}))
     logging.debug(f"send_heartbeat_id:{id}")
@@ -450,7 +450,7 @@ async def send_auth_id(
     websocket: websockets.WebSocketClientProtocol, paradex_jwt: str, msg_id: str
 ) -> None:
     """
-    Sends an authentication message to the Paradigm WebSocket.
+    Sends an authentication message to the Paradex WebSocket.
     """
     await websocket.send(
         json.dumps(

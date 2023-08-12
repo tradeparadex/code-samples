@@ -13,7 +13,7 @@ type BridgedToken struct {
 type SystemConfigResponse struct {
 	GatewayUrl                string         `json:"starknet_gateway_url" example:"https://potc-testnet-02.starknet.io"`                                       // Feeder Gateway URL from Starknet
 	ChainId                   string         `json:"starknet_chain_id" example:"SN_CHAIN_ID"`                                                                  // Chain ID for the Starknet Instance
-	BlockExplorerUrl          string         `json:"block_explorer_url" example:"https://voyager.nightly.corp.paradigm.co/"`                                   // Block explorer URL for the current SN Instance
+	BlockExplorerUrl          string         `json:"block_explorer_url" example:"https://voyager.testnet.paradex.trade/"`                                      // Block explorer URL for the current SN Instance
 	ParaclearAddress          string         `json:"paraclear_address" example:"0x4638e3041366aa71720be63e32e53e1223316c7f0d56f7aa617542ed1e7554d"`            // Paraclear contract address
 	ParaclearDecimals         int            `json:"paraclear_decimals"`                                                                                       // Decimals used on Paraclear contract
 	ParaclearAccountProxyHash string         `json:"paraclear_account_proxy_hash" example:"0x3530cc4759d78042f1b543bf797f5f3d647cde0388c33734cf91b7f7b9314a9"` // Proxy hash of the account contract
