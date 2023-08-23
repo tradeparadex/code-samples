@@ -23,6 +23,14 @@ pip install -r requirements.txt # (.venv)
 ETHEREUM_PRIVATE_KEY=private_key python onboarding.py # (.venv)
 ```
 
+#### Retrieving L2 Private Key
+In order to fetch the L2 account details against the given L1 / Ethereum private key, you can run below script
+```bash
+#pre-req: create venv 
+ETHEREUM_PRIVATE_KEY=private_key python fetch_l2_account_details.py
+```
+
+
 ### Running with Docker
 
 Make sure you have pre-installed [Docker](https://docs.docker.com/get-docker/).
