@@ -9,9 +9,6 @@ from utils import (
     get_paradex_config,
 )
 
-paradex_http_url = "https://api.testnet.paradex.trade/v1"
-
-
 async def main(eth_private_key_hex: str) -> None:
     # Initialize Ethereum account
     _, eth_account = get_l1_eth_account(eth_private_key_hex)
