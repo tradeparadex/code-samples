@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/dontpanicdao/caigo v0.4.1
-	github.com/ethereum/go-ethereum v1.12.0
+	github.com/ethereum/go-ethereum v1.12.1
 )
 
 require (
@@ -21,6 +21,7 @@ require (
 	github.com/tklauser/numcpus v0.6.1 // indirect
 	github.com/yusufpapurcu/wmi v1.2.3 // indirect
 	golang.org/x/crypto v0.11.0 // indirect
+	golang.org/x/exp v0.0.0-20230515195305-f3d0a9c9a5cc // indirect
 	golang.org/x/sys v0.10.0 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 )
