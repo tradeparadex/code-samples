@@ -7,7 +7,7 @@ from typing import Dict, List, Optional, Tuple
 
 from eth_account.hdaccount import generate_mnemonic
 from eth_account.messages import encode_structured_data
-from paradex_api_utils import Order
+from .paradex_api_utils import Order
 from starknet_py.hash.address import compute_address
 from starknet_py.hash.selector import get_selector_from_name
 from starknet_py.net.account.account import Account

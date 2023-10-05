@@ -4,8 +4,9 @@ import hashlib
 import logging
 import random
 import re
+import time
 from enum import Enum
-from typing import Callable, Dict, Optional, Tuple, Literal
+from typing import Callable, Dict, Optional, Tuple
 
 from eth_account.messages import encode_structured_data
 from eth_account.signers.local import LocalAccount
@@ -32,6 +33,7 @@ from starknet_py.transaction_exceptions import (
     TransactionNotReceivedError,
     TransactionRejectedError,
 )
+from starknet_py.utils.typed_data import TypedData
 from starkware.crypto.signature.signature import EC_ORDER
 
 
@@ -53,6 +55,34 @@ async def get_paradex_config() -> Dict:
                 logging.error("Unable to GET /system/config")
     return response
 
+def build_auth_message(chainId: int, now: int, expiry: int) -> TypedData:
+    # "0x534e5f474f45524c49" - "SN_GOERLI"
+    message = {
+        "message": {
+            "method": "POST",
+            "path": "/v1/auth",
+            "body": "",
+            "timestamp": now,
+            "expiration": expiry,
+        },
+        "domain": {"name": "Paradex", "chainId": hex(chainId), "version": "1"},
+        "primaryType": "Request",
+        "types": {
+            "StarkNetDomain": [
+                {"name": "name", "type": "felt"},
+                {"name": "chainId", "type": "felt"},
+                {"name": "version", "type": "felt"},
+            ],
+            "Request": [
+                {"name": "method", "type": "felt"},
+                {"name": "path", "type": "felt"},
+                {"name": "body", "type": "felt"},
+                {"name": "timestamp", "type": "felt"},
+                {"name": "expiration", "type": "felt"},
+            ],
+        },
+    }
+    return message
 
 def build_stark_key_message(chain_id: int):
     message = {
@@ -285,3 +315,43 @@ def get_l1_eth_account(eth_private_key_hex: str) -> Tuple[Web3, LocalAccount]:
 
 def hex_to_int(val: str):
     return int(val, 16)
+
+
+async def get_jwt_token(
+    paradex_config: Dict, paradex_http_url: str, account_address: str, private_key: str
+) -> str:
+    token = ""
+
+    chain_id = int_from_bytes(paradex_config["starknet_chain_id"].encode())
+    account = get_account(account_address, private_key, paradex_config)
+
+    now = int(time.time())
+    expiry = now + 24 * 60 * 60
+    message = build_auth_message(chain_id, now, expiry)
+    sig = account.sign_message(message)
+
+    headers: Dict = {
+        "PARADEX-STARKNET-ACCOUNT": account_address,
+        "PARADEX-STARKNET-SIGNATURE": f'["{sig[0]}","{sig[1]}"]',
+        "PARADEX-TIMESTAMP": str(now),
+        "PARADEX-SIGNATURE-EXPIRATION": str(expiry),
+    }
+
+    url = paradex_http_url + '/auth'
+
+    logging.info(f"POST {url}")
+    logging.info(f"Headers: {headers}")
+
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, headers=headers) as response:
+            status_code: int = response.status
+            response: Dict = await response.json()
+            if status_code == 200:
+                logging.info(f"Success: {response}")
+                logging.info("Get JWT successful")
+            else:
+                logging.error(f"Status Code: {status_code}")
+                logging.error(f"Response Text: {response}")
+                logging.error("Unable to POST /onboarding")
+            token = response["jwt_token"]
+    return token

@@ -5,7 +5,7 @@ Description:
 import ipaddress
 import os
 
-from paradex_api_utils import ApiConfigInterface
+from .paradex_api_utils import ApiConfigInterface
 
 
 class ApiConfig(ApiConfigInterface):

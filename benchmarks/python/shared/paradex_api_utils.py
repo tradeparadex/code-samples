@@ -132,6 +132,7 @@ class Order:
         size: Decimal,
         limit_price: Decimal = None,
         client_id: str = "",
+        signature_timestmap = None,
     ):
         ts = time_millis()
         self.id: str = ""
@@ -151,7 +152,7 @@ class Order:
         self.last_action_time = 0
         self.cancel_attempts = 0
         self.signature = ""
-        self.signature_timestamp = ts
+        self.signature_timestamp = ts if signature_timestmap is None else signature_timestmap
 
     def __repr__(self):
         ord_status = self.status.value
