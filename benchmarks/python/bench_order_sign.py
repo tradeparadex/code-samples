@@ -4,9 +4,9 @@ import os
 
 from decimal import Decimal
 
-from .shared.api_client import generate_accounts, get_paradex_config, sign_order
-from .shared.api_config import ApiConfig
-from .shared.paradex_api_utils import Order, OrderSide, OrderType
+from shared.api_client import generate_accounts, get_paradex_config, sign_order
+from shared.api_config import ApiConfig
+from shared.paradex_api_utils import Order, OrderSide, OrderType
 
 number = 100
 rep = 7
