@@ -3,7 +3,7 @@ module orderbench
 go 1.20
 
 require (
-	github.com/consensys/gnark-crypto v0.11.2
+	github.com/consensys/gnark-crypto v0.12.0
 	github.com/dontpanicdao/caigo v0.4.1
 	github.com/stretchr/testify v1.8.3
 )
