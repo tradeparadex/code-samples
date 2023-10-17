@@ -63,7 +63,7 @@ func (o *OrderPayload) FmtDefinitionEncoding(field string) (fmtEnc []*big.Int) {
 	case "market":
 		fmtEnc = append(fmtEnc, types.StrToFelt(o.Market).Big())
 	case "side":
-		fmtEnc = append(fmtEnc, types.StrToFelt(OrderSide(o.Side).Get()).Big())
+		fmtEnc = append(fmtEnc, types.StrToFelt(OrderSide(o.Side).Side()).Big())
 	case "orderType":
 		fmtEnc = append(fmtEnc, types.StrToFelt(o.OrderType).Big())
 	case "size":
