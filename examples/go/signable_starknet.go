@@ -6,7 +6,10 @@ import (
 
 	"github.com/dontpanicdao/caigo"
 	"github.com/dontpanicdao/caigo/types"
+	"github.com/shopspring/decimal"
 )
+
+const scaleX8Decimal = decimal.RequireFromString("100000000")
 
 type OnboardingPayload struct {
 	Action string
@@ -52,8 +55,24 @@ type OrderPayload struct {
 	Market    string // Market name - ETH-USD-PERP
 	Side      string // 1 for buy, 2 for sell
 	OrderType string // MARKET or LIMIT
-	Size      string // Size scaled by 1e8. 0.1 ETH = 10000000
-	Price     string // Price scaled by 1e8. 0 for market orders
+	Size      string // Size
+	Price     string // Price (0 for MARKET orders)
+}
+
+func (o *OrderPayload) GetScaledSize() string {
+  return decimal.RequireFromString(o.Size).Mul(scaleX8Decimal).String()
+}
+
+func (o *OrderPayload) GetPrice() string {
+  if OrderType(o.OrderType) == OrderTypeMarket {
+    return "0"
+  } else {
+    return o.Price
+  }
+}
+
+func (o *OrderPayload) GetScaledPrice() string {
+  return decimal.RequireFromString(o.GetPrice()).Mul(scaleX8Decimal).String()
 }
 
 func (o *OrderPayload) FmtDefinitionEncoding(field string) (fmtEnc []*big.Int) {
@@ -67,13 +86,9 @@ func (o *OrderPayload) FmtDefinitionEncoding(field string) (fmtEnc []*big.Int) {
 	case "orderType":
 		fmtEnc = append(fmtEnc, types.StrToFelt(o.OrderType).Big())
 	case "size":
-		fmtEnc = append(fmtEnc, types.StrToFelt(o.Size).Big())
+		fmtEnc = append(fmtEnc, types.StrToFelt(o.GetScaledSize()).Big())
 	case "price":
-		price := o.Price
-		if OrderType(o.OrderType) == OrderTypeMarket {
-			price = "0"
-		}
-		fmtEnc = append(fmtEnc, types.StrToFelt(price).Big())
+		fmtEnc = append(fmtEnc, types.StrToFelt(o.GetScaledPrice()).Big())
 	}
 
 	return fmtEnc
