@@ -1,4 +1,4 @@
-aiohttp == 3.8.5
+aiohttp == 3.8.6
 starknet.py==0.15.2
 eth-account==0.6.1
 web3==6.0.0b4
