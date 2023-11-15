@@ -84,7 +84,7 @@ def build_auth_message(chainId: int, now: int, expiry: int) -> TypedData:
     return message
 
 
-def build_stark_key_message(chain_id: int):
+def build_stark_key_message(chain_id: int) -> TypedData:
     message = {
         "domain": {"name": "Paradex", "version": "1", "chainId": chain_id},
         "primaryType": "Constant",
