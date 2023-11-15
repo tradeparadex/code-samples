@@ -21,12 +21,12 @@ def build_order(config: ApiConfig, order_type: OrderType, order_side: OrderSide,
         order_side=order_side,
         size=size,
         client_id=client_id,
-        signature_timestmap=int(time.time()),
+        signature_timestamp=int(time.time()),
     )
-    sig, _ = sign_order(config, order)
+    sig = sign_order(config, order)
     order.signature = sig
     return order
-    
+
 
 async def main(config: ApiConfig) -> None:
     # Initialize Ethereum account

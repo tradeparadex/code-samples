@@ -119,7 +119,6 @@ async def get_jwt_token(
     now = int(time.time())
     expiry = now + 24 * 60 * 60
     message = build_auth_message(chain_id, now, expiry)
-    hash = TypedData.from_dict(message).message_hash(account.address)
     sig = account.sign_message(message)
 
     headers: Dict = {
