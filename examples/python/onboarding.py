@@ -10,6 +10,7 @@ from starknet_py.common import int_from_bytes
 from starknet_py.utils.typed_data import TypedData
 from utils import (
     build_auth_message,
+    build_onboarding_message,
     generate_paradex_account,
     get_account,
     get_l1_eth_account,
@@ -17,27 +18,6 @@ from utils import (
 )
 
 paradex_http_url = "https://api.testnet.paradex.trade/v1"
-
-
-def build_onboarding_message(chainId: int) -> TypedData:
-    message = {
-        "message": {
-            "action": "Onboarding",
-        },
-        "domain": {"name": "Paradex", "chainId": hex(chainId), "version": "1"},
-        "primaryType": "Constant",
-        "types": {
-            "StarkNetDomain": [
-                {"name": "name", "type": "felt"},
-                {"name": "chainId", "type": "felt"},
-                {"name": "version", "type": "felt"},
-            ],
-            "Constant": [
-                {"name": "action", "type": "felt"},
-            ],
-        },
-    }
-    return message
 
 
 async def perform_onboarding(

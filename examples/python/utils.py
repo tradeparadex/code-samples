@@ -83,6 +83,7 @@ def build_auth_message(chainId: int, now: int, expiry: int) -> TypedData:
     }
     return message
 
+
 def build_stark_key_message(chain_id: int):
     message = {
         "domain": {"name": "Paradex", "version": "1", "chainId": chain_id},
@@ -99,6 +100,27 @@ def build_stark_key_message(chain_id: int):
         },
         "message": {
             "action": "STARK Key",
+        },
+    }
+    return message
+
+
+def build_onboarding_message(chainId: int) -> TypedData:
+    message = {
+        "message": {
+            "action": "Onboarding",
+        },
+        "domain": {"name": "Paradex", "chainId": hex(chainId), "version": "1"},
+        "primaryType": "Constant",
+        "types": {
+            "StarkNetDomain": [
+                {"name": "name", "type": "felt"},
+                {"name": "chainId", "type": "felt"},
+                {"name": "version", "type": "felt"},
+            ],
+            "Constant": [
+                {"name": "action", "type": "felt"},
+            ],
         },
     }
     return message
