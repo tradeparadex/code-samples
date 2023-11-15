@@ -7,7 +7,7 @@ import traceback
 from hexbytes import HexBytes
 from typing import Dict, Tuple
 
-from web3.auto.infura.goerli import Web3
+from web3.auto import Web3
 
 from starknet_py.contract import Contract
 from starknet_py.net.account.account import Account

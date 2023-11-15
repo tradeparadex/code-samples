@@ -230,7 +230,7 @@ def generate_keys(menmonic: str, address_index: str) -> Optional[Tuple[str, str]
     account = w3.eth.account.from_mnemonic(
         menmonic, account_path=f"m/44'/60'/0'/0/{address_index}"
     )
-    return account.address, account.privateKey.hex()
+    return account.address, account.key.hex()
 
 
 def sign_stark_key_message(eth_private_key: int, stark_key_message) -> str:
@@ -307,7 +307,7 @@ def generate_accounts_dict(config: dict) -> dict:
     if config.get("ethereum_private_key"):
         w3.eth.account.enable_unaudited_hdwallet_features()
         account = w3.eth.account.from_key(config.get("ethereum_private_key"))
-        eth_address, eth_priv = account.address, account.privateKey.hex()
+        eth_address, eth_priv = account.address, account.key.hex()
     else:
         mnemonic = get_recovery_phrase_dict(config)
         eth_address, eth_priv = generate_keys(mnemonic, config.get("pod_index"))
