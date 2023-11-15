@@ -67,7 +67,6 @@ def get_account_client(
 
 # Messages
 def auth_message(chainId: int, now: int, expiry: int) -> TypedData:
-    # "0x534e5f474f45524c49" - "SN_GOERLI"
     message = {
         "message": {
             "method": "POST",

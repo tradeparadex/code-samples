@@ -9,6 +9,7 @@ import aiohttp
 from starknet_py.common import int_from_bytes
 from starknet_py.utils.typed_data import TypedData
 from utils import (
+    build_auth_message,
     generate_paradex_account,
     get_account,
     get_l1_eth_account,
@@ -76,36 +77,6 @@ async def perform_onboarding(
                 logging.error(f"Response Text: {response}")
                 logging.error("Unable to POST /onboarding")
     return response
-
-
-def build_auth_message(chainId: int, now: int, expiry: int) -> TypedData:
-    # "0x534e5f474f45524c49" - "SN_GOERLI"
-    message = {
-        "message": {
-            "method": "POST",
-            "path": "/v1/auth",
-            "body": "",
-            "timestamp": now,
-            "expiration": expiry,
-        },
-        "domain": {"name": "Paradex", "chainId": hex(chainId), "version": "1"},
-        "primaryType": "Request",
-        "types": {
-            "StarkNetDomain": [
-                {"name": "name", "type": "felt"},
-                {"name": "chainId", "type": "felt"},
-                {"name": "version", "type": "felt"},
-            ],
-            "Request": [
-                {"name": "method", "type": "felt"},
-                {"name": "path", "type": "felt"},
-                {"name": "body", "type": "felt"},
-                {"name": "timestamp", "type": "felt"},
-                {"name": "expiration", "type": "felt"},
-            ],
-        },
-    }
-    return message
 
 
 async def get_jwt_token(
