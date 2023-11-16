@@ -556,7 +556,6 @@ async def get_jwt_token(
     now = int(time.time())
     expiry = now + 24 * 60 * 60
     message = auth_message(chain, now, expiry)
-    hash = TypedData.from_dict(message).message_hash(account.address)
 
     sig = account.sign_message(message)
 
@@ -636,11 +635,10 @@ def custom_exception_handler(loop, context):
 def sign_order(config: ApiConfig, o: Order) -> Tuple[str, str]:
     account = starknet_account(config)
     message = order_sign_message(account._chain_id.value, o)
-    hash = TypedData.from_dict(message).message_hash(account.address)
 
     sig = account.sign_message(message)
     flat_sig = flatten_signature(sig)
-    return flat_sig, hash
+    return flat_sig
 
 
 def get_recovery_phrase(config: ApiConfig) -> str:
@@ -654,7 +652,7 @@ def generate_accounts(config: ApiConfig):
     if config.ethereum_private_key != "":
         w3.eth.account.enable_unaudited_hdwallet_features()
         account = w3.eth.account.from_key(config.ethereum_private_key)
-        eth_address, eth_priv = account.address, account.privateKey.hex()
+        eth_address, eth_priv = account.address, account.key.hex()
     else:
         mnemonic = get_recovery_phrase(config)
         eth_address, eth_priv = generate_keys(mnemonic, config.pod_index)

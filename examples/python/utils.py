@@ -10,11 +10,11 @@ from typing import Callable, Dict, Optional, Tuple
 
 from eth_account.messages import encode_structured_data
 from eth_account.signers.local import LocalAccount
-from web3.auto.infura.goerli import Web3, w3
+from web3.auto import Web3, w3
 from web3.middleware import construct_sign_and_send_raw_middleware
 
 from starknet_py.common import int_from_bytes
-from starknet_py.constants import RPC_INVALID_MESSAGE_SELECTOR_ERROR
+from starknet_py.constants import RPC_CONTRACT_ERROR
 from starknet_py.hash.address import compute_address
 from starknet_py.hash.selector import get_selector_from_name
 from starknet_py.net.account.account import Account
@@ -23,12 +23,11 @@ from starknet_py.net.client_errors import ClientError
 from starknet_py.net.client_models import Call, Hash, TransactionStatus
 from starknet_py.net.gateway_client import GatewayClient
 from starknet_py.net.models import Address
-from starknet_py.net.models import StarknetChainId
 from starknet_py.net.networks import CustomGatewayUrls, Network
 from starknet_py.net.signer.stark_curve_signer import KeyPair
 from starknet_py.proxy.contract_abi_resolver import ProxyConfig
 from starknet_py.proxy.proxy_check import ArgentProxyCheck, OpenZeppelinProxyCheck, ProxyCheck
-from starknet_py.transaction_exceptions import (
+from starknet_py.transaction_errors import (
     TransactionFailedError,
     TransactionNotReceivedError,
     TransactionRejectedError,
@@ -55,8 +54,8 @@ async def get_paradex_config() -> Dict:
                 logging.error("Unable to GET /system/config")
     return response
 
+
 def build_auth_message(chainId: int, now: int, expiry: int) -> TypedData:
-    # "0x534e5f474f45524c49" - "SN_GOERLI"
     message = {
         "message": {
             "method": "POST",
@@ -84,7 +83,8 @@ def build_auth_message(chainId: int, now: int, expiry: int) -> TypedData:
     }
     return message
 
-def build_stark_key_message(chain_id: int):
+
+def build_stark_key_message(chain_id: int) -> TypedData:
     message = {
         "domain": {"name": "Paradex", "version": "1", "chainId": chain_id},
         "primaryType": "Constant",
@@ -100,6 +100,27 @@ def build_stark_key_message(chain_id: int):
         },
         "message": {
             "action": "STARK Key",
+        },
+    }
+    return message
+
+
+def build_onboarding_message(chainId: int) -> TypedData:
+    message = {
+        "message": {
+            "action": "Onboarding",
+        },
+        "domain": {"name": "Paradex", "chainId": hex(chainId), "version": "1"},
+        "primaryType": "Constant",
+        "types": {
+            "StarkNetDomain": [
+                {"name": "name", "type": "felt"},
+                {"name": "chainId", "type": "felt"},
+                {"name": "version", "type": "felt"},
+            ],
+            "Constant": [
+                {"name": "action", "type": "felt"},
+            ],
         },
     }
     return message
@@ -244,10 +265,7 @@ class StarkwareETHProxyCheck(ProxyCheck):
             (implementation,) = await client.call_contract(call=call)
             await get_class_func(implementation)
         except ClientError as err:
-            if (
-                re.search(err_msg, err.message, re.IGNORECASE)
-                or err.code == RPC_INVALID_MESSAGE_SELECTOR_ERROR
-            ):
+            if (re.search(err_msg, err.message, re.IGNORECASE) or err.code == RPC_CONTRACT_ERROR):
                 return None
             raise err
         return implementation

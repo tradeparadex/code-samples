@@ -43,7 +43,7 @@ func BenchmarkSignSingleOrder(b *testing.B) {
 	// priv, _ := big.NewInt(0).SetString("83490221354900822813770954017753999002387366720326019591623250615955802248", 10)
 	x, y, err := caigo.Curve.PrivateToPoint(priv)
 	require.NoError(b, err)
-	td, err := NewVerificationTypedData(VerificationTypeOrder, "PRIVATE_SN_POTC_GOERLI")
+	td, err := NewVerificationTypedData(VerificationTypeOrder, "PRIVATE_SN_POTC_SEPOLIA")
 	require.NoError(b, err)
 	sc := caigo.StarkCurve{}
 	domEnc, err := td.GetTypedMessageHash("StarkNetDomain", td.Domain, sc)
@@ -88,7 +88,7 @@ func BenchmarkVerifySingleOrder(b *testing.B) {
 
 	pubX, _, err := caigo.Curve.PrivateToPoint(priv)
 	require.NoError(b, err)
-	td, err := NewVerificationTypedData(VerificationTypeOrder, "PRIVATE_SN_POTC_GOERLI")
+	td, err := NewVerificationTypedData(VerificationTypeOrder, "PRIVATE_SN_POTC_SEPOLIA")
 	require.NoError(b, err)
 	sc := caigo.StarkCurve{}
 	domEnc, err := td.GetTypedMessageHash("StarkNetDomain", td.Domain, sc)
@@ -166,7 +166,7 @@ func BenchmarkGnarkSignSingleOrder(b *testing.B) {
 	pubX := big.NewInt(0)
 	pubX = priv.PublicKey.A.X.BigInt(pubX)
 	require.NoError(b, err)
-	td, err := NewVerificationTypedData(VerificationTypeOrder, "PRIVATE_SN_POTC_GOERLI")
+	td, err := NewVerificationTypedData(VerificationTypeOrder, "PRIVATE_SN_POTC_SEPOLIA")
 	require.NoError(b, err)
 	sc := caigo.StarkCurve{}
 	domEnc, err := td.GetTypedMessageHash("StarkNetDomain", td.Domain, sc)
@@ -211,7 +211,7 @@ func BenchmarkGnarkVerifySingleOrder(b *testing.B) {
 	pubX := big.NewInt(0)
 	pubX = priv.PublicKey.A.X.BigInt(pubX)
 	require.NoError(b, err)
-	td, err := NewVerificationTypedData(VerificationTypeOrder, "PRIVATE_SN_POTC_GOERLI")
+	td, err := NewVerificationTypedData(VerificationTypeOrder, "PRIVATE_SN_POTC_SEPOLIA")
 	require.NoError(b, err)
 	sc := caigo.StarkCurve{}
 	domEnc, err := td.GetTypedMessageHash("StarkNetDomain", td.Domain, sc)
@@ -250,7 +250,7 @@ func TestCompareMessageHash(b *testing.T) {
 	pubX := big.NewInt(0)
 	pubX = priv.PublicKey.A.X.BigInt(pubX)
 	require.NoError(b, err)
-	td, err := NewVerificationTypedData(VerificationTypeOrder, "PRIVATE_SN_POTC_GOERLI")
+	td, err := NewVerificationTypedData(VerificationTypeOrder, "PRIVATE_SN_POTC_SEPOLIA")
 	require.NoError(b, err)
 	sc := caigo.StarkCurve{}
 	domEnc, err := td.GetTypedMessageHash("StarkNetDomain", td.Domain, sc)

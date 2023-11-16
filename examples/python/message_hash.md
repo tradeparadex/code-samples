@@ -58,7 +58,7 @@ The `domain_separator` is defined as the `hash_struct` of the `StarkNetDomain` s
 struct StarkNetDomain:
     member name: felt = 'Paradex'
     member version: felt = 1
-    member chain_id: felt = 'PRIVATE_SN_POTC_GOERLI'
+    member chain_id: felt = 'PRIVATE_SN_POTC_SEPOLIA'
 end
 ```
 

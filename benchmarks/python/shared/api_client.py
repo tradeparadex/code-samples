@@ -654,7 +654,7 @@ def generate_accounts(config: ApiConfig):
     if config.ethereum_private_key != "":
         w3.eth.account.enable_unaudited_hdwallet_features()
         account = w3.eth.account.from_key(config.ethereum_private_key)
-        eth_address, eth_priv = account.address, account.privateKey.hex()
+        eth_address, eth_priv = account.address, account.key.hex()
     else:
         mnemonic = get_recovery_phrase(config)
         eth_address, eth_priv = generate_keys(mnemonic, config.pod_index)

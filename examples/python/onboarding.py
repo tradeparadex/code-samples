@@ -9,6 +9,8 @@ import aiohttp
 from starknet_py.common import int_from_bytes
 from starknet_py.utils.typed_data import TypedData
 from utils import (
+    build_auth_message,
+    build_onboarding_message,
     generate_paradex_account,
     get_account,
     get_l1_eth_account,
@@ -16,27 +18,6 @@ from utils import (
 )
 
 paradex_http_url = "https://api.testnet.paradex.trade/v1"
-
-
-def build_onboarding_message(chainId: int) -> TypedData:
-    message = {
-        "message": {
-            "action": "Onboarding",
-        },
-        "domain": {"name": "Paradex", "chainId": hex(chainId), "version": "1"},
-        "primaryType": "Constant",
-        "types": {
-            "StarkNetDomain": [
-                {"name": "name", "type": "felt"},
-                {"name": "chainId", "type": "felt"},
-                {"name": "version", "type": "felt"},
-            ],
-            "Constant": [
-                {"name": "action", "type": "felt"},
-            ],
-        },
-    }
-    return message
 
 
 async def perform_onboarding(
@@ -78,36 +59,6 @@ async def perform_onboarding(
     return response
 
 
-def build_auth_message(chainId: int, now: int, expiry: int) -> TypedData:
-    # "0x534e5f474f45524c49" - "SN_GOERLI"
-    message = {
-        "message": {
-            "method": "POST",
-            "path": "/v1/auth",
-            "body": "",
-            "timestamp": now,
-            "expiration": expiry,
-        },
-        "domain": {"name": "Paradex", "chainId": hex(chainId), "version": "1"},
-        "primaryType": "Request",
-        "types": {
-            "StarkNetDomain": [
-                {"name": "name", "type": "felt"},
-                {"name": "chainId", "type": "felt"},
-                {"name": "version", "type": "felt"},
-            ],
-            "Request": [
-                {"name": "method", "type": "felt"},
-                {"name": "path", "type": "felt"},
-                {"name": "body", "type": "felt"},
-                {"name": "timestamp", "type": "felt"},
-                {"name": "expiration", "type": "felt"},
-            ],
-        },
-    }
-    return message
-
-
 async def get_jwt_token(
     paradex_config: Dict, paradex_http_url: str, account_address: str, private_key: str
 ) -> str:
@@ -119,7 +70,6 @@ async def get_jwt_token(
     now = int(time.time())
     expiry = now + 24 * 60 * 60
     message = build_auth_message(chain_id, now, expiry)
-    hash = TypedData.from_dict(message).message_hash(account.address)
     sig = account.sign_message(message)
 
     headers: Dict = {

@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Callable, Optional
 
 from starknet_py.common import int_from_bytes
-from starknet_py.constants import RPC_INVALID_MESSAGE_SELECTOR_ERROR
+from starknet_py.constants import RPC_CONTRACT_ERROR
 from starknet_py.hash.selector import get_selector_from_name
 from starknet_py.net.client import Client
 from starknet_py.net.client_errors import ClientError
@@ -15,7 +15,7 @@ from starknet_py.proxy.proxy_check import ArgentProxyCheck, OpenZeppelinProxyChe
 
 # For matching existing chainId type
 class CustomStarknetChainId(Enum):
-    PRIVATE_SN_TESTNET = int_from_bytes(b"PRIVATE_SN_POTC_GOERLI")
+    PRIVATE_SN_TESTNET = int_from_bytes(b"PRIVATE_SN_POTC_SEPOLIA")
 
 
 class StarkwareETHProxyCheck(ProxyCheck):
@@ -45,10 +45,7 @@ class StarkwareETHProxyCheck(ProxyCheck):
             (implementation,) = await client.call_contract(call=call)
             await get_class_func(implementation)
         except ClientError as err:
-            if (
-                re.search(err_msg, err.message, re.IGNORECASE)
-                or err.code == RPC_INVALID_MESSAGE_SELECTOR_ERROR
-            ):
+            if re.search(err_msg, err.message, re.IGNORECASE) or err.code == RPC_CONTRACT_ERROR:
                 return None
             raise err
         return implementation
