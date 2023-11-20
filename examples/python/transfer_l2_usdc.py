@@ -15,7 +15,9 @@ from utils import (
 )
 
 # Transfer USDC from old Paradex account to new Paradex account
-async def paraclear_transfer(config: dict, old_account: Account, new_account: Account):
+async def paraclear_transfer(
+    config: dict, old_account: Account, new_account: Account, transfer_amount: float = None
+):
     paraclear_address = config["paraclear_address"]
     paraclear_decimals = config["paraclear_decimals"]
     usdc_address = config["bridged_tokens"][0]["l2_token_address"]
@@ -31,15 +33,18 @@ async def paraclear_transfer(config: dict, old_account: Account, new_account: Ac
         provider=old_account, address=usdc_address, proxy_config=get_proxy_config()
     )
 
-    old_acc_token_asset_bal = await paraclear_contract.functions["getTokenAssetBalance"].call(
-        account=old_account.address, token_address=hex_to_int(usdc_address)
-    )
-    available_balance_paraclear = old_acc_token_asset_bal.balance
-    available_balance = available_balance_paraclear / 10**paraclear_decimals
-    logging.info(f"USDC balance on paraclear: {available_balance} (old account)")
+    # Set transfer amount to available balance if not specified
+    if (transfer_amount == None):
+        old_acc_token_asset_bal = await paraclear_contract.functions["getTokenAssetBalance"].call(
+            account=old_account.address, token_address=hex_to_int(usdc_address)
+        )
+        available_balance_paraclear = old_acc_token_asset_bal.balance
+        available_balance = available_balance_paraclear / 10**paraclear_decimals
+        logging.info(f"USDC balance on paraclear: {available_balance} (old account)")
+        transfer_amount = available_balance
 
-    transfer_amount_paraclear = int(available_balance * 10**paraclear_decimals)
-    transfer_amount_usdc = int(available_balance * 10**usdc_decimals)
+    transfer_amount_paraclear = int(transfer_amount * 10**paraclear_decimals)
+    transfer_amount_usdc = int(transfer_amount * 10**usdc_decimals)
 
     # Calls
     # 1. Withdraw available USDC from Paraclear (old account)
@@ -119,7 +124,9 @@ async def main(old_paradex_account_private_key_hex, new_paradex_account_private_
     new_account = get_account(
         new_paradex_account_address, new_paradex_account_private_key_hex, paradex_config
     )
-    await paraclear_transfer(paradex_config, old_account, new_account)
+
+    # Remove transfer amount to transfer all available balance
+    await paraclear_transfer(paradex_config, old_account, new_account, transfer_amount=100.0)
 
 
 if __name__ == "__main__":

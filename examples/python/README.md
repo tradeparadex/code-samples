@@ -120,3 +120,8 @@ What this example does:
 * Ensure both accounts have previously onboarded via the onboarding example or UI:
   * `OLD_PARADEX_ACCOUNT_PRIVATE_KEY` (L2 Private Key of old account)
   * `NEW_PARADEX_ACCOUNT_PRIVATE_KEY` (L2 Private Key of new account)
+* Remove default amount from [transfer_l2_usdc.py](transfer_l2_usdc.py#L29) to transfer all USDC balance
+  * Default: 100 USDC
+* **Please note:**
+  * Script only transfers free USDC tokens
+  * It will **not** realize any PnLs or close any open positions
