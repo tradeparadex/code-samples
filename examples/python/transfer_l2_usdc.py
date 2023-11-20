@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import os
-from typing import Dict
 
 from starknet_py.contract import Contract
 from starknet_py.net.account.account import Account
@@ -16,7 +15,7 @@ from utils import (
 )
 
 # Transfer USDC from old Paradex account to new Paradex account
-async def paraclear_transfer(config: Dict, old_account: Account, new_account: Account):
+async def paraclear_transfer(config: dict, old_account: Account, new_account: Account):
     paraclear_address = config["paraclear_address"]
     paraclear_decimals = config["paraclear_decimals"]
     usdc_address = config["bridged_tokens"][0]["l2_token_address"]
