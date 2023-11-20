@@ -24,12 +24,13 @@ ETHEREUM_PRIVATE_KEY=private_key python onboarding.py # (.venv)
 ```
 
 #### Retrieving L2 Private Key
+
 In order to fetch the L2 account details against the given L1 / Ethereum private key, you can run below script
+
 ```bash
-#pre-req: create venv 
+# pre-req: create venv
 ETHEREUM_PRIVATE_KEY=private_key python fetch_l2_account_details.py
 ```
-
 
 ### Running with Docker
 
@@ -96,3 +97,26 @@ ABI for any L1 contract can be sourced from Etherscan. Steps:
 7. Save the ABI to a JSON file
 
 *Note: Contracts must be deployed with source code verification on Etherscan.*
+
+## Transfer (L2)
+
+Script to transfer all USDC tokens from one L2 account to another L2 account on Paradex (Paraclear Contract).
+
+```bash
+# pre-req: create venv
+OLD_PARADEX_ACCOUNT_PRIVATE_KEY=private_key NEW_PARADEX_ACCOUNT_PRIVATE_KEY=private_key python transfer_l2_usdc.py
+```
+
+### Overview
+
+What this example does:
+
+* Withdraws from Paradex (Paraclear Contract) to L2 Contract (old)
+* Triggers transfer of USDC tokens from L2 Contract (old) to L2 Contract (new)
+* Deposits to Paradex (Paraclear Contract) from L2 Contract (new)
+
+### Script notes
+
+* Ensure both accounts have previously onboarded via the onboarding example or UI:
+  * `OLD_PARADEX_ACCOUNT_PRIVATE_KEY` (L2 Private Key of old account)
+  * `NEW_PARADEX_ACCOUNT_PRIVATE_KEY` (L2 Private Key of new account)

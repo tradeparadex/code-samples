@@ -5,7 +5,7 @@ import logging
 import random
 import re
 import time
-from enum import Enum
+from enum import IntEnum
 from typing import Callable, Dict, Optional, Tuple
 
 from eth_account.messages import encode_structured_data
@@ -184,6 +184,16 @@ def get_acc_contract_address_and_call_data(
     return hex(address)
 
 
+def get_paradex_account_address(paradex_config: Dict, paradex_account_private_key_hex: str) -> str:
+    paradex_key_pair = KeyPair.from_private_key(hex_to_int(paradex_account_private_key_hex))
+    paradex_account_address = get_acc_contract_address_and_call_data(
+        paradex_config['paraclear_account_proxy_hash'],
+        paradex_config['paraclear_account_hash'],
+        hex(paradex_key_pair.public_key),
+    )
+    return paradex_account_address
+
+
 def generate_paradex_account(
     paradex_config: Dict, eth_account_private_key_hex: str
 ) -> Tuple[str, str]:
@@ -208,8 +218,8 @@ def network_from_base(base: str) -> Network:
 
 
 def get_chain_id(chain_id: str):
-    class CustomStarknetChainId(Enum):
-        PRIVATE_TESTNET = int_from_bytes(chain_id.encode())
+    class CustomStarknetChainId(IntEnum):
+        PRIVATE_TESTNET = int_from_bytes(chain_id.encode("UTF-8"))
     return CustomStarknetChainId.PRIVATE_TESTNET
 
 
