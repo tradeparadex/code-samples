@@ -15,7 +15,7 @@ from utils import (
 
 def sign_stark_key_message_ledger(message: SignableMessage, eth_account_address: str) -> str:
     dongle = init_dongle()
-    account = find_account(eth_account_address, dongle, count=1)
+    account = find_account(eth_account_address, dongle, count=10)
     if account is None:
         raise Exception(f"Account {eth_account_address} not found on Ledger")
     # header/body is eth_account naming, presumably to be generic
@@ -27,7 +27,7 @@ def sign_stark_key_message_ledger(message: SignableMessage, eth_account_address:
         sender_path=account.path,
         dongle=dongle,
     )
-    return signed.signature.hex()
+    return signed.signature
 
 
 def derive_stark_key_from_ledger(message: str, eth_account_address: str) -> int:
