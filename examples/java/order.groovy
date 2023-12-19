@@ -109,7 +109,7 @@ class ParadexOrderExample {
         http.connect()
 
         if (http.getResponseCode() >= 400) {
-            println "Error: ${http.getErrorStream().getText("UTF-8")}"
+            throw new Exception(http.getErrorStream().getText("UTF-8"))
         } else {
             // Response
             def responseCode = http.responseCode
