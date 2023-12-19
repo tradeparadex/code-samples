@@ -19,19 +19,22 @@ Tested on `Groovy Version: 4.0.15 JVM: 21.0.1`
 
 ```bash
 groovy auth.groovy
+groovy order.groovy
 ```
 
-## Authentication
+## Authentication and Order Creation
 
 ### Overview
 
 What this example does:
 
 * Retrieves a JWT to be used to make requests to private endpoints of the API
+* Create a new market order using the JWT token from previous step
 
 ### Script notes
 
-Refer to the `main` method under [auth.groovy](auth.groovy#L21) for the flow that consists of:
+Refer to the `main` method under [order.groovy](order.groovy#L29) for the flow that consists of:
 
 * Generating message hash and signature
-* Getting a JWT from `/auth` endpoint
+* Getting a JWT from `GET /auth` endpoint
+* Creating order using `POST /orders` endpoint
