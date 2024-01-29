@@ -15,12 +15,12 @@ You will need a private key of the Ethereum account that will control your Parad
 
 ### Running directly
 
-All commands below are to be run from `examples/go` directory.
+All commands below are to be run from `go` directory.
 
 To run it directly, ensure [Go 1.20.3+](https://go.dev/doc/install) is installed.
 
 ```bash
-go run onboarding
+go run example
 ```
 
 ## Onboarding and Authentication

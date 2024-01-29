@@ -9,7 +9,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-const scaleX8Decimal = decimal.RequireFromString("100000000")
+var scaleX8Decimal = decimal.RequireFromString("100000000")
 
 type OnboardingPayload struct {
 	Action string
@@ -60,19 +60,19 @@ type OrderPayload struct {
 }
 
 func (o *OrderPayload) GetScaledSize() string {
-  return decimal.RequireFromString(o.Size).Mul(scaleX8Decimal).String()
+	return decimal.RequireFromString(o.Size).Mul(scaleX8Decimal).String()
 }
 
 func (o *OrderPayload) GetPrice() string {
-  if OrderType(o.OrderType) == OrderTypeMarket {
-    return "0"
-  } else {
-    return o.Price
-  }
+	if OrderType(o.OrderType) == OrderTypeMarket {
+		return "0"
+	} else {
+		return o.Price
+	}
 }
 
 func (o *OrderPayload) GetScaledPrice() string {
-  return decimal.RequireFromString(o.GetPrice()).Mul(scaleX8Decimal).String()
+	return decimal.RequireFromString(o.GetPrice()).Mul(scaleX8Decimal).String()
 }
 
 func (o *OrderPayload) FmtDefinitionEncoding(field string) (fmtEnc []*big.Int) {
