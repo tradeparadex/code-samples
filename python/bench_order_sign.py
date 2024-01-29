@@ -27,7 +27,6 @@ loop = asyncio.get_event_loop()
 config.paradex_config = loop.run_until_complete(get_paradex_config(config.paradex_http_url))
 generate_accounts(config)
 
-# t1 = timeit.repeat(lambda: foo_array(10_000_000), number=number, repeat=rep)
 t1 = timeit.repeat(lambda: sign_order(config, mock_order), number=number, repeat=rep)
 
 print(
