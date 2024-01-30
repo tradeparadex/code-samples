@@ -20,11 +20,11 @@ Python: 13 signs/sec - C extension disabled
 Go: 590 signs/sec
 ```
 
-## Running on your machine
+### Running on your machine
 
 Examples and benchmarks for signing orders.
 
-## Python
+#### Python
 
 To run it directly, you will need [Python 3.9+](https://www.python.org/downloads/).
 
@@ -35,7 +35,7 @@ pip install -r requirements.txt
 python bench_order_sign.py
 ```
 
-## Go
+#### Go
 
 ```bash
 cd go
