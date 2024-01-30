@@ -7,7 +7,6 @@ from typing import Dict, List
 
 import aiohttp
 from starknet_py.common import int_from_bytes
-from starknet_py.utils.typed_data import TypedData
 from utils import (
     build_auth_message,
     build_onboarding_message,

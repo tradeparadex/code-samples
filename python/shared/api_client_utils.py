@@ -10,7 +10,6 @@ from eth_account.messages import encode_structured_data
 from .paradex_api_utils import Order
 from starknet_py.hash.address import compute_address
 from starknet_py.hash.selector import get_selector_from_name
-from starknet_py.net.account.account import Account
 from starknet_py.net.gateway_client import GatewayClient
 from starknet_py.net.models import StarknetChainId
 from starknet_py.net.networks import CustomGatewayUrls, Network
@@ -18,6 +17,8 @@ from starknet_py.net.signer.stark_curve_signer import KeyPair
 from starknet_py.utils.typed_data import TypedData
 from starkware.crypto.signature.signature import EC_ORDER
 from web3.auto import w3
+
+from helpers.account import Account
 
 
 class TokenExpired(Exception):

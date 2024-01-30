@@ -15,8 +15,8 @@ Collection of Paradex code samples, snippets and benchmarks
 On MacBook Pro 2021, M1 Pro
 
 ```bash
-Python: 27 signs/sec - C extension enabled
-Python: 13 signs/sec - C extension disabled
+Python: 8 signs/sec - C based `crypto-cpp-py`
+Python: 182 signs/sec - Rust based `starknet-crypto-py`
 Go: 590 signs/sec
 ```
 

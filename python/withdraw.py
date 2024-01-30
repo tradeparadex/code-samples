@@ -10,8 +10,9 @@ from typing import Dict, Tuple
 from web3.auto import Web3
 
 from starknet_py.contract import Contract
-from starknet_py.net.account.account import Account
 from starknet_py.net.client import Client
+
+from helpers.account import Account
 
 from utils import (
     generate_paradex_account,
