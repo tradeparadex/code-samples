@@ -3,7 +3,8 @@ import logging
 import os
 
 from starknet_py.contract import Contract
-from starknet_py.net.account.account import Account
+
+from helpers.account import Account
 
 from utils import (
     get_account,

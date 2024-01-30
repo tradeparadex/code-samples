@@ -17,7 +17,6 @@ from starknet_py.common import int_from_bytes
 from starknet_py.constants import RPC_CONTRACT_ERROR
 from starknet_py.hash.address import compute_address
 from starknet_py.hash.selector import get_selector_from_name
-from starknet_py.net.account.account import Account
 from starknet_py.net.client import Client
 from starknet_py.net.client_errors import ClientError
 from starknet_py.net.client_models import Call, Hash, TransactionStatus
@@ -34,6 +33,8 @@ from starknet_py.transaction_errors import (
 )
 from starknet_py.utils.typed_data import TypedData
 from starkware.crypto.signature.signature import EC_ORDER
+
+from helpers.account import Account
 
 
 paradex_http_url = "https://api.testnet.paradex.trade/v1"

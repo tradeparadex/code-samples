@@ -34,11 +34,12 @@ from .api_config import ApiConfig
 from .paradex_api_utils import Order
 from starknet_py.common import int_from_bytes
 from starknet_py.contract import Contract
-from starknet_py.net.account.account import Account
 from starknet_py.net.signer.stark_curve_signer import KeyPair
 from starknet_py.utils.typed_data import TypedData
 from .starknet_utils import CustomStarknetChainId, get_proxy_config
 from web3.auto import w3
+
+from helpers.account import Account
 
 
 # RESToverHTTP Interface
