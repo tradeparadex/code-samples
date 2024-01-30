@@ -133,6 +133,7 @@ class Order:
         limit_price: Decimal = None,
         client_id: str = "",
         signature_timestamp = None,
+        instruction: str = "GTC",
     ):
         ts = time_millis()
         self.id: str = ""
@@ -153,6 +154,7 @@ class Order:
         self.cancel_attempts = 0
         self.signature = ""
         self.signature_timestamp = ts if signature_timestamp is None else signature_timestamp
+        self.instruction = instruction
 
     def __repr__(self):
         ord_status = self.status.value
@@ -161,6 +163,7 @@ class Order:
         msg = f'{self.market} {ord_status} {self.order_type.name} '
         msg += f'{self.order_side} {self.remaining}/{self.size}'
         msg += f'@{self.limit_price}' if self.order_type == OrderType.Limit else ''
+        msg += f';{self.instruction}'
         msg += f';id={self.id}' if self.id else ''
         msg += f';client_id={self.client_id}' if self.client_id else ''
         msg += f';last_action:{self.last_action}' if self.last_action != OrderAction.NAN else ''
@@ -182,6 +185,7 @@ class Order:
             "client_id": self.client_id,
             "signature": self.signature,
             "signature_timestamp": self.signature_timestamp,
+            "instruction": self.instruction,
         }
         if self.order_type == OrderType.Limit:
             order_dict["price"] = str(self.limit_price)
