@@ -56,7 +56,7 @@ type OrderPayload struct {
 	Side      string // 1 for buy, 2 for sell
 	OrderType string // MARKET or LIMIT
 	Size      string // Size
-	Price     string // Price (0 for MARKET orders)
+	Price     string // Price scaled by 1e8. (Price is 0 for MARKET orders)
 }
 
 func (o *OrderPayload) GetScaledSize() string {
