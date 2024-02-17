@@ -16,6 +16,7 @@ On MacBook Pro 2021, M1 Pro
 
 ```bash
 Go: 1430 signs/sec - Go based `gnark-crypto`
+Java: 7.61 signs/sec - JVM based `starknet-jvm`
 Python: 182 signs/sec - Rust based `starknet-crypto-py`
 Python: 8 signs/sec - C based `crypto-cpp-py`
 ```
@@ -40,4 +41,11 @@ python bench_order_sign.py
 ```bash
 cd go
 go test -bench .
+```
+
+#### Java
+
+```bash
+cd java
+groovy order.groovy bench
 ```
