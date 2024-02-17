@@ -15,9 +15,9 @@ Collection of Paradex code samples, snippets and benchmarks
 On MacBook Pro 2021, M1 Pro
 
 ```bash
-Python: 8 signs/sec - C based `crypto-cpp-py`
+Go: 1430 signs/sec - Go based `gnark-crypto`
 Python: 182 signs/sec - Rust based `starknet-crypto-py`
-Go: 590 signs/sec
+Python: 8 signs/sec - C based `crypto-cpp-py`
 ```
 
 ### Running on your machine
