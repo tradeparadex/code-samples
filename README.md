@@ -7,6 +7,7 @@ Collection of Paradex code samples, snippets and benchmarks
 * [Go](go/README.md)
 * [Java](java/README.md)
 * [Python](python/README.md)
+* [TypeScript](typescript/README.md)
 
 ## Benchmarks
 
@@ -19,6 +20,7 @@ Go: 1430 signs/sec - Go based `gnark-crypto`
 Java: 7.61 signs/sec - JVM based `starknet-jvm`
 Python: 182 signs/sec - Rust based `starknet-crypto-py`
 Python: 8 signs/sec - C based `crypto-cpp-py`
+TypeScript: 50 signs/sec - JavaScript based `starknet.js`
 ```
 
 ### Running on your machine
@@ -48,4 +50,11 @@ go test -bench .
 ```bash
 cd java
 groovy order.groovy bench
+```
+
+#### TypeScript
+
+```bash
+cd typescript
+yarn run bench
 ```
