@@ -7,6 +7,7 @@ Collection of Paradex code samples, snippets and benchmarks
 * [Go](go/README.md)
 * [Java](java/README.md)
 * [Python](python/README.md)
+* [TypeScript](typescript/README.md)
 
 ## Benchmarks
 
@@ -15,9 +16,11 @@ Collection of Paradex code samples, snippets and benchmarks
 On MacBook Pro 2021, M1 Pro
 
 ```bash
-Python: 8 signs/sec - C based `crypto-cpp-py`
+Go: 1430 signs/sec - Go based `gnark-crypto`
+Java: 7.61 signs/sec - JVM based `starknet-jvm`
 Python: 182 signs/sec - Rust based `starknet-crypto-py`
-Go: 590 signs/sec
+Python: 8 signs/sec - C based `crypto-cpp-py`
+TypeScript: 50 signs/sec - JavaScript based `starknet.js`
 ```
 
 ### Running on your machine
@@ -40,4 +43,18 @@ python bench_order_sign.py
 ```bash
 cd go
 go test -bench .
+```
+
+#### Java
+
+```bash
+cd java
+groovy order.groovy bench
+```
+
+#### TypeScript
+
+```bash
+cd typescript
+yarn run bench
 ```

@@ -27,6 +27,12 @@ class ParadexOrderExample {
     static String privateKeyStr = '' // PARADEX_PRIVATE_KEY
 
     static void main(String... args) {
+        if (args.length == 1 && args[0] == "bench") {
+            println("Running benchmarks...")
+            benchmark()
+            return
+        }
+
         def jwt = getJWT()
 
         def size = new BigDecimal("0.1")
@@ -44,12 +50,8 @@ class ParadexOrderExample {
         long timestamp = System.currentTimeMillis() / 1000
         long expiry = timestamp + 24 * 60 * 60 // now + 24 hours
 
-        // Chain ID - PRIVATE_SN_POTC_SEPOLIA
-        BigInteger chainID = new BigInteger('7693264728749915528729180568779831130134670232771119425')
-        String chainIdHex = '0x' + chainID.toString(16).toUpperCase()
-
         // Create the auth message
-        def authMessage = createAuthMessage(timestamp, expiry, chainIdHex)
+        def authMessage = createAuthMessage(timestamp, expiry, chainId)
 
         // Get signature
         def (String signatureStr, String messageHashStr) = getSignature(authMessage)
@@ -128,7 +130,7 @@ class ParadexOrderExample {
         return "[$jsonArray]"
     }
 
-    static String createAuthMessage(long timestamp, long expiration, String chainIdHex) {
+    static String createAuthMessage(long timestamp, long expiration, String chainId) {
         return """
            {
                 "message": {
@@ -155,7 +157,7 @@ class ParadexOrderExample {
                     ]
                 }
             }
-            """.formatted(timestamp, expiration, chainIdHex)
+            """.formatted(timestamp, expiration, chainId)
     }
 
     static Map<String, Object> buildOrder(
@@ -164,7 +166,7 @@ class ParadexOrderExample {
         BigDecimal size,
         String market,
         String clientId,
-        String chainID
+        String chainId
     ) {
         long now = System.currentTimeMillis()
         def order = [
@@ -175,7 +177,7 @@ class ParadexOrderExample {
             size: size.toString(),
             type: orderType
         ]
-        def message = createOrderMessage(chainID, now, market, orderSide, orderType, size)
+        def message = createOrderMessage(chainId, now, market, orderSide, orderType, size)
         def (String signatureStr, String messageHashStr) = getSignature(message)
         order.signature = signatureStr
         return order
@@ -233,5 +235,31 @@ class ParadexOrderExample {
                 }
             }
         """
+    }
+
+    // Benchmark
+    static benchmark() {
+        def runs = 20
+        def startTime = System.currentTimeMillis()
+
+        (1..runs).each { _ ->
+            def clientId = "mock"
+            def market = "ETH-USD-PERP"
+            def orderSide = "BUY"
+            def orderType = "MARKET"
+            def size = new BigDecimal("0.1")
+            long now = System.currentTimeMillis()
+
+            def message = createOrderMessage(chainId, now, market, orderSide, orderType, size)
+            def (String signatureStr, String messageHashStr) = getSignature(message)
+        }
+        def endTime = System.currentTimeMillis()
+
+        def timeElapsed = (endTime - startTime)
+        def timeElapsedSec = timeElapsed / 1000
+
+        println("Total time for ${runs} orders: ${timeElapsedSec}s")
+        println("Average time per order: ${timeElapsed / runs}ms")
+        println("Result: ${runs / (timeElapsedSec)} signs/sec")
     }
 }

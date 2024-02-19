@@ -38,3 +38,12 @@ Refer to the `main` method under [order.groovy](order.groovy#L29) for the flow t
 * Generating message hash and signature
 * Getting a JWT from `GET /auth` endpoint
 * Creating order using `POST /orders` endpoint
+* Run benchmarks using `groovy order.groovy bench`
+
+### Benchmarks
+
+```bash
+Total time for 20 orders: 2.626s
+Average time per order: 131.3ms
+Result: 7.6161462300 signs/sec
+```

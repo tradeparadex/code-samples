@@ -20,4 +20,15 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 nvm install
 yarn install
 yarn run app
+yarn run bench
+```
+
+## Benchmarks
+
+```bash
+┌─────────┬─────────────┬─────────┬───────────────────┬──────────┬─────────┐
+│ (index) │ Task Name   │ ops/sec │ Average Time (ns) │ Margin   │ Samples │
+├─────────┼─────────────┼─────────┼───────────────────┼──────────┼─────────┤
+│ 0       │ 'signs/sec' │ '50'    │ 19777384.0392157  │ '±0.28%' │ 51      │
+└─────────┴─────────────┴─────────┴───────────────────┴──────────┴─────────┘
 ```
