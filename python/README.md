@@ -63,6 +63,16 @@ Refer to the `main` function under [onboarding.py](onboarding.py#L180) for the m
 * Getting a JWT
 * Calling a private endpoint
 
+### Using L2 credentials to authenticate with the API.
+Once you have onboarded, if you would rather use your L2 information directly, be sure to skip over the `Initialize Ethereum` account and `Generate Paradex account` functions in the script. If you simply plug in your L2 private key in place of the `eth_private_key_hex` variable, you will actually be generating a separate account that isn't actually usable.
+
+Why?
+
+These functions are a part of a deterministic process to generate L2 data. When you use your L1 private key (as expected), it will generate the same L2 data to be used every time. 
+However, if you give the program something different it's going to generate  _separate_ L2 data which is going to point to a separate account. Any info you try to pull this way will show as if the account is completely blank.
+
+That being said, once you've onboarded and generated this the L2 data (even just from the UI), you can plug the L2 account and private key directly into the other functions calling private endpoints which will authenticate correctly just as if you had started with the L1 private key.
+
 ## Withdraw
 
 ### Overview
