@@ -8,7 +8,6 @@ package com.paradex.api.rest
 
 import com.swmansion.starknet.data.TypedData
 import com.swmansion.starknet.data.types.Felt
-import com.swmansion.starknet.signer.StarkCurveSigner
 import groovy.json.JsonBuilder
 import groovyx.net.http.*
 import groovyx.net.http.RESTClient
@@ -17,6 +16,7 @@ import java.net.URL
 import java.util.List
 import java.util.stream.Collectors
 import org.apache.commons.math3.util.BigReal
+import paradex.StarknetCurve
 
 class ParadexOrderExample {
     static String apiUrl = "https://api.testnet.paradex.trade/v1"
@@ -79,11 +79,8 @@ class ParadexOrderExample {
         Felt messageHash = typedData.getMessageHash(accountAddress)
         String messageHashStr = messageHash.hexString().toString()
 
-        // Create new StarkCurveSigner with the private key
-        StarkCurveSigner scSigner = new StarkCurveSigner(privateKey)
-
-        // Sign the typed data
-        List<Felt> signature = scSigner.signTypedData(typedData, accountAddress)
+        // Sign message hash using paradex.StarknetCurve
+        List<Felt> signature = StarknetCurve.sign(privateKey, messageHash).toList()
 
         // Convert the signature to a string
         List<BigInteger> signatureBigInt = signature.collect { it.getValue().toBigInteger() }
@@ -239,7 +236,7 @@ class ParadexOrderExample {
 
     // Benchmark
     static benchmark() {
-        def runs = 20
+        def runs = 2000
         def startTime = System.currentTimeMillis()
 
         (1..runs).each { _ ->
