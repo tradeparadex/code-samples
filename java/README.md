@@ -43,7 +43,7 @@ Refer to the `main` method under [order.groovy](order.groovy#L29) for the flow t
 ### Benchmarks
 
 ```bash
-Total time for 20 orders: 2.626s
-Average time per order: 131.3ms
-Result: 7.6161462300 signs/sec
+Total time for 2000 orders: 10.979s
+Average time per order: 5.4895ms
+Result: 182.1659531834 signs/sec
 ```
