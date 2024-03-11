@@ -80,7 +80,7 @@ export function signOrder(
 ): string {
   const sideForSigning = orderDetails.side === "BUY" ? "1" : "2";
 
-  const priceForSigning = toQuantums(orderDetails.price, 8);
+  const priceForSigning = toQuantums(orderDetails.price ?? "0", 8);
   const sizeForSigning = toQuantums(orderDetails.size, 8);
   const orderTypeForSigning = shortString.encodeShortString(orderDetails.type);
   const marketForSigning = shortString.encodeShortString(orderDetails.market);
