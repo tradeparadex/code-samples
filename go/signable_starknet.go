@@ -55,10 +55,12 @@ type OrderPayload struct {
 	Market    string // Market name - ETH-USD-PERP
 	Side      string // 1 for buy, 2 for sell
 	OrderType string // MARKET or LIMIT
-	Size      string // Size
-	Price     string // Price (0 for MARKET orders)
+	Size      string // Size scaled by 1e8
+	Price     string // Price scaled by 1e8 (Price is 0 for MARKET orders)
 }
 
+// Multiplies size by decimal precision of 8
+// e.g. 0.2 is converted to 20_000_000 (0.2 * 10^8)
 func (o *OrderPayload) GetScaledSize() string {
 	return decimal.RequireFromString(o.Size).Mul(scaleX8Decimal).String()
 }
@@ -71,6 +73,8 @@ func (o *OrderPayload) GetPrice() string {
 	}
 }
 
+// Multiplies price by decimal precision of 8
+// e.g. 3_309.33 is converted to 330_933_000_000 (3_309.33 * 10^8)
 func (o *OrderPayload) GetScaledPrice() string {
 	return decimal.RequireFromString(o.GetPrice()).Mul(scaleX8Decimal).String()
 }
