@@ -4,7 +4,9 @@ import (
 	"crypto/rand"
 	"fmt"
 	"math/big"
+	"strconv"
 	"testing"
+	"time"
 
 	"github.com/consensys/gnark-crypto/ecc/stark-curve/ecdsa"
 	"github.com/consensys/gnark-crypto/ecc/stark-curve/fp"
@@ -260,4 +262,34 @@ func TestCompareMessageHash(b *testing.T) {
 	hash2, err := GetMessageHash(td, domEnc, pubX, orderP, sc)
 	require.NoError(b, err)
 	require.Equal(b, hash.String(), hash2.String())
+}
+
+func TestExampleSignSingleOrderExtended(t *testing.T) {
+	priv, _ := caigo.Curve.GetRandomPrivateKey()
+	x, _, err := caigo.Curve.PrivateToPoint(priv)
+	require.NoError(t, err)
+	td, err := NewVerificationTypedData(VerificationTypeOrder, "PRIVATE_SN_POTC_SEPOLIA")
+	require.NoError(t, err)
+	sc := caigo.StarkCurve{}
+	domEnc, err := td.GetTypedMessageHash("StarkNetDomain", td.Domain, sc)
+
+	t1 := time.Now()
+	for i := 0; i < 100000; i++ {
+		orderP := &OrderPayload{
+			Timestamp: 1684815490129,
+			Market:    "ETH-USD-PERP",
+			Side:      "SELL",
+			OrderType: "LIMIT",
+			Size:      strconv.Itoa(20 + i),
+			Price:     strconv.Itoa(1900 + i),
+		}
+		hash, err := GnarkGetMessageHash(td, domEnc, x, orderP, sc)
+		require.NoError(t, err)
+		_, _, err = caigo.Curve.Sign(hash, priv)
+		require.NoError(t, err)
+		fmt.Println(i, ",", time.Since(t1))
+		t1 = time.Now()
+	}
+	fmt.Println(err)
+	require.NoError(t, err)
 }
