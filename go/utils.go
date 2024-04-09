@@ -12,8 +12,8 @@ import (
 	"github.com/dontpanicdao/caigo/types"
 )
 
-func Print(str string) {
-	s := fmt.Sprintln(str)
+func Print(str ...any) {
+	s := fmt.Sprintln(str...)
 	io.WriteString(os.Stdout, s)
 }
 

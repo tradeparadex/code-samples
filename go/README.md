@@ -20,7 +20,7 @@ All commands below are to be run from `go` directory.
 To run it directly, ensure [Go 1.20.3+](https://go.dev/doc/install) is installed.
 
 ```bash
-go run example
+go run .
 ```
 
 ## Onboarding and Authentication
@@ -31,12 +31,13 @@ What this example does:
 
 * Generates and onboards a new Paradex account based off your Ethereum private key
 * Retrieves a JWT to be used to make requests to private endpoints of the API
-* Makes a request to the private GET /orders endpoint using the JWT
+* Submits a new order to the private `POST /orders` endpoint using the JWT
+* Makes a request to the private `GET /orders` endpoint using the JWT
 
 ### Script notes
 
 Refer to the `main` function under [onboarding.go](onboarding.go#L180) for the main flow that consists of:
 
-* Onboarding
-* Getting a JWT
-* Calling a private endpoint
+* Perform onboarding
+* Authenticate and retrieve a JWT
+* Calling multiple private endpoints

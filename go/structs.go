@@ -39,6 +39,7 @@ type OpenOrdersReqBody struct {
 type OrderSide string
 type OrderType string
 type OrderStatus string
+type OrderFlag string
 
 type Order struct {
 	Id                 string      `json:"id" example:"123456"`                                                                 // Unique order identifier
@@ -90,3 +91,19 @@ const (
 	OrderTypeMarket OrderType = "MARKET"
 	OrderTypeLimit  OrderType = "LIMIT"
 )
+
+type OrderRequest struct {
+	Market             string      `json:"market" example:"BTC-USD-PERP"` // Market for which order is created
+	Side               OrderSide   `json:"side"`                          // Order side
+	Type               OrderType   `json:"type"`                          // Order type
+	Size               string      `json:"size" example:"1.213"`          // Size of the order
+	Price              string      `json:"price" example:"29500.12"`      // Order price
+	ClientId           string      `json:"client_id" example:"123454321"` // Unique client assigned ID for the order
+	Signature          string      `json:"signature"`                     // Order Payload signed with STARK Private Key
+	SignatureTimestamp int64       `json:"signature_timestamp"`           // Timestamp of order creation, used for signature verification
+	Instruction        string      `json:"instruction"`                   // Order Instruction, GTC, IOC or POST_ONLY if empty GTC
+	Stp                string      `json:"stp"`                           // Self Trade Prevention, EXPIRE_MAKER, EXPIRE_TAKER or EXPIRE_BOTH, if empty EXPIRE_TAKER
+	RecvWindow         int64       `json:"recv_window"`                   // Order will be created if it is received by API within RecvWindow milliseconds from signature timestamp, minimum is 10 milliseconds
+	Flags              []OrderFlag `json:"flags"`                         // Order flags, allow flag: REDUCE_ONLY
+	TriggerPrice       string      `json:"trigger_price"`                 // Trigger price for stop order
+}
