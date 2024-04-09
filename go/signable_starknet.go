@@ -2,14 +2,19 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"math/big"
 
+	"github.com/consensys/gnark-crypto/ecc/stark-curve/fp"
 	"github.com/dontpanicdao/caigo"
 	"github.com/dontpanicdao/caigo/types"
 	"github.com/shopspring/decimal"
+
+	pedersenhash "github.com/consensys/gnark-crypto/ecc/stark-curve/pedersen-hash"
 )
 
 var scaleX8Decimal = decimal.RequireFromString("100000000")
+var snMessageBigInt = types.UTF8StrToBig("StarkNet Message")
 
 type OnboardingPayload struct {
 	Action string
@@ -65,18 +70,15 @@ func (o *OrderPayload) GetScaledSize() string {
 	return decimal.RequireFromString(o.Size).Mul(scaleX8Decimal).String()
 }
 
-func (o *OrderPayload) GetPrice() string {
-	if OrderType(o.OrderType) == OrderTypeMarket {
-		return "0"
-	} else {
-		return o.Price
-	}
-}
-
 // Multiplies price by decimal precision of 8
 // e.g. 3_309.33 is converted to 330_933_000_000 (3_309.33 * 10^8)
 func (o *OrderPayload) GetScaledPrice() string {
-	return decimal.RequireFromString(o.GetPrice()).Mul(scaleX8Decimal).String()
+	price := o.Price
+	if OrderType(o.OrderType) == OrderTypeMarket {
+		return "0"
+	} else {
+		return decimal.RequireFromString(price).Mul(scaleX8Decimal).String()
+	}
 }
 
 func (o *OrderPayload) FmtDefinitionEncoding(field string) (fmtEnc []*big.Int) {
@@ -86,13 +88,16 @@ func (o *OrderPayload) FmtDefinitionEncoding(field string) (fmtEnc []*big.Int) {
 	case "market":
 		fmtEnc = append(fmtEnc, types.StrToFelt(o.Market).Big())
 	case "side":
-		fmtEnc = append(fmtEnc, types.StrToFelt(OrderSide(o.Side).Get()).Big())
+		side := OrderSide(o.Side).Get()
+		fmtEnc = append(fmtEnc, types.StrToFelt(side).Big())
 	case "orderType":
 		fmtEnc = append(fmtEnc, types.StrToFelt(o.OrderType).Big())
 	case "size":
-		fmtEnc = append(fmtEnc, types.StrToFelt(o.GetScaledSize()).Big())
+		size := o.GetScaledSize()
+		fmtEnc = append(fmtEnc, types.StrToFelt(size).Big())
 	case "price":
-		fmtEnc = append(fmtEnc, types.StrToFelt(o.GetScaledPrice()).Big())
+		price := o.GetScaledPrice()
+		fmtEnc = append(fmtEnc, types.StrToFelt(price).Big())
 	}
 
 	return fmtEnc
@@ -186,4 +191,52 @@ func NewTypedData(types map[string]caigo.TypeDef, domain *caigo.Domain, pType st
 	}
 
 	return &typedData, nil
+}
+
+func PedersenArray(elems []*big.Int) *big.Int {
+	fpElements := make([]*fp.Element, len(elems))
+	for i, elem := range elems {
+		fpElements[i] = new(fp.Element).SetBigInt(elem)
+	}
+	hash := pedersenhash.PedersenArray(fpElements...)
+	return hash.BigInt(new(big.Int))
+}
+
+func GetMessageHash(td *caigo.TypedData, domEnc *big.Int, account *big.Int, msg caigo.TypedMessage, sc caigo.StarkCurve) (hash *big.Int, err error) {
+	elements := []*big.Int{snMessageBigInt, domEnc, account, nil}
+
+	msgEnc, err := td.GetTypedMessageHash(td.PrimaryType, msg, sc)
+	if err != nil {
+		return hash, fmt.Errorf("could not hash message: %w", err)
+	}
+	elements[3] = msgEnc
+	hash, err = sc.ComputeHashOnElements(elements)
+	return hash, err
+}
+
+func GnarkGetMessageHash(td *caigo.TypedData, domEnc *big.Int, account *big.Int, msg caigo.TypedMessage, sc caigo.StarkCurve) (hash *big.Int, err error) {
+	msgEnc, err := GnarkGetTypedMessageHash(td, td.PrimaryType, msg)
+	if err != nil {
+		return nil, fmt.Errorf("could not hash message: %w", err)
+	}
+	elements := []*big.Int{snMessageBigInt, domEnc, account, msgEnc}
+	hash = PedersenArray(elements)
+	return hash, err
+}
+
+func GnarkGetTypedMessageHash(td *caigo.TypedData, inType string, msg caigo.TypedMessage) (hash *big.Int, err error) {
+	prim := td.Types[inType]
+	elements := make([]*big.Int, 0, len(prim.Definitions)+1)
+	elements = append(elements, prim.Encoding)
+
+	for _, def := range prim.Definitions {
+		if def.Type == "felt" {
+			fmtDefinitions := msg.FmtDefinitionEncoding(def.Name)
+			elements = append(elements, fmtDefinitions...)
+		} else {
+			panic("not felt")
+		}
+	}
+	hash = PedersenArray(elements)
+	return hash, err
 }
