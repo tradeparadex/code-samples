@@ -109,7 +109,10 @@ func PerformOnboarding(
 
 	// Body
 	body := OnboardingReqBody{PublicKey: dexPublicKey}
-	bodyByte, _ := json.Marshal(body)
+	bodyByte, err := json.Marshal(body)
+	if err != nil {
+		Print("Unable to marshal body:", err)
+	}
 
 	// Request
 	req, _ := http.NewRequest(http.MethodPost, onboardingUrl, bytes.NewReader(bodyByte))
@@ -180,7 +183,10 @@ func GetOpenOrders(jwtToken string) []*Order {
 
 	// Body
 	body := OpenOrdersReqBody{Market: "ETH-USD-PERP"}
-	bodyByte, _ := json.Marshal(body)
+	bodyByte, err := json.Marshal(body)
+	if err != nil {
+		Print("Unable to marshal body:", err)
+	}
 
 	// Request
 	req, _ := http.NewRequest(http.MethodGet, ordersUrl, bytes.NewReader(bodyByte))
@@ -242,7 +248,10 @@ func SubmitOrder(
 		Signature:          GetSignatureStr(r, s),
 		SignatureTimestamp: timestamp,
 	}
-	bodyByte, _ := json.Marshal(body)
+	bodyByte, err := json.Marshal(body)
+	if err != nil {
+		Print("Unable to marshal body:", err)
+	}
 
 	// Request
 	req, _ := http.NewRequest(http.MethodPost, ordersUrl, bytes.NewReader(bodyByte))
