@@ -97,9 +97,11 @@ func PerformOnboarding(
 	dexAccountAddressBN := types.HexToBN(dexAccountAddress)
 
 	// Get message hash and signature
+	sc := caigo.StarkCurve{}
 	message := &OnboardingPayload{Action: "Onboarding"}
 	typedData, _ := NewVerificationTypedData(VerificationTypeOnboarding, config.ChainId)
-	messageHash, _ := typedData.GetMessageHash(dexAccountAddressBN, message, caigo.StarkCurve{})
+	domEnc, _ := typedData.GetTypedMessageHash("StarkNetDomain", typedData.Domain, sc)
+	messageHash, _ := GnarkGetMessageHash(typedData, domEnc, dexAccountAddressBN, message, sc)
 	r, s, _ := GnarkSign(messageHash, dexPrivateKey)
 
 	// URL
@@ -107,7 +109,10 @@ func PerformOnboarding(
 
 	// Body
 	body := OnboardingReqBody{PublicKey: dexPublicKey}
-	bodyByte, _ := json.Marshal(body)
+	bodyByte, err := json.Marshal(body)
+	if err != nil {
+		Print("Unable to marshal body:", err)
+	}
 
 	// Request
 	req, _ := http.NewRequest(http.MethodPost, onboardingUrl, bytes.NewReader(bodyByte))
@@ -120,7 +125,7 @@ func PerformOnboarding(
 
 	// Response
 	res, _ := http.DefaultClient.Do(req)
-	Print(res.Status)
+	Print("POST /onboarding:", res.Status)
 }
 
 // `POST /auth`
@@ -137,6 +142,7 @@ func GetJwtToken(
 	expirationStr := strconv.FormatInt(now+DEFAULT_EXPIRY_IN_SECONDS, 10)
 
 	// Get message hash and signature
+	sc := caigo.StarkCurve{}
 	message := &AuthPayload{
 		Method:     "POST",
 		Path:       "/v1/auth",
@@ -145,7 +151,8 @@ func GetJwtToken(
 		Expiration: expirationStr,
 	}
 	typedData, _ := NewVerificationTypedData(VerificationTypeAuth, config.ChainId)
-	messageHash, _ := typedData.GetMessageHash(dexAccountAddressBN, message, caigo.StarkCurve{})
+	domEnc, _ := typedData.GetTypedMessageHash("StarkNetDomain", typedData.Domain, sc)
+	messageHash, _ := GnarkGetMessageHash(typedData, domEnc, dexAccountAddressBN, message, sc)
 	r, s, _ := GnarkSign(messageHash, dexPrivateKey)
 
 	// URL
@@ -163,7 +170,7 @@ func GetJwtToken(
 
 	// Response
 	res, _ := http.DefaultClient.Do(req)
-	Print(res.Status)
+	Print("POST /auth:", res.Status)
 
 	jwtToken := ParsePostAuth(res)
 	return jwtToken
@@ -176,7 +183,10 @@ func GetOpenOrders(jwtToken string) []*Order {
 
 	// Body
 	body := OpenOrdersReqBody{Market: "ETH-USD-PERP"}
-	bodyByte, _ := json.Marshal(body)
+	bodyByte, err := json.Marshal(body)
+	if err != nil {
+		Print("Unable to marshal body:", err)
+	}
 
 	// Request
 	req, _ := http.NewRequest(http.MethodGet, ordersUrl, bytes.NewReader(bodyByte))
@@ -188,13 +198,75 @@ func GetOpenOrders(jwtToken string) []*Order {
 
 	// Response
 	res, _ := http.DefaultClient.Do(req)
-	Print(res.Status)
+	Print("GET /orders:", res.Status)
 
 	orders := ParseGetOrders(res)
 	return orders
 }
 
-func ExampleSignOrder() {
+func SubmitOrder(
+	config SystemConfigResponse,
+	dexAccountAddress string,
+	dexPrivateKey string,
+	jwtToken string,
+) {
+	dexAccountAddressBN := types.HexToBN(dexAccountAddress)
+
+	sc := caigo.StarkCurve{}
+	typedData, _ := NewVerificationTypedData("Order", config.ChainId)
+	domEnc, _ := typedData.GetTypedMessageHash("StarkNetDomain", typedData.Domain, sc)
+
+	// Change order values here
+	market := "ETH-USD-PERP"
+	side := "BUY"
+	orderType := "LIMIT"
+	size := "1"
+	price := "900"
+	timestamp := time.Now().UnixMilli()
+
+	orderPayload := &OrderPayload{
+		Timestamp: timestamp,
+		Market:    market,
+		Side:      side,
+		OrderType: orderType,
+		Size:      size,
+		Price:     price,
+	}
+	messageHash, _ := GnarkGetMessageHash(typedData, domEnc, dexAccountAddressBN, orderPayload, sc)
+	r, s, _ := GnarkSign(messageHash, dexPrivateKey)
+
+	// URL
+	ordersUrl := fmt.Sprintf("%s/orders", PARADEX_HTTP_URL)
+
+	// Body
+	body := OrderRequest{
+		Market:             market,
+		Side:               OrderSide(side),
+		Type:               OrderType(orderType),
+		Size:               size,
+		Price:              price,
+		Signature:          GetSignatureStr(r, s),
+		SignatureTimestamp: timestamp,
+	}
+	bodyByte, err := json.Marshal(body)
+	if err != nil {
+		Print("Unable to marshal body:", err)
+	}
+
+	// Request
+	req, _ := http.NewRequest(http.MethodPost, ordersUrl, bytes.NewReader(bodyByte))
+
+	// Headers
+	req.Header.Set("Content-Type", CONTENT_TYPE)
+	bearer := fmt.Sprintf("Bearer %s", jwtToken)
+	req.Header.Add("Authorization", bearer)
+
+	// Response
+	res, _ := http.DefaultClient.Do(req)
+	Print("POST /orders:", res.Status)
+}
+
+func ExampleSignMultipleOrders() {
 	privateKey := GetEcdsaPrivateKey("X")
 	accountAddress := big.NewInt(0)
 	sc := caigo.StarkCurve{}
@@ -205,24 +277,24 @@ func ExampleSignOrder() {
 		start := time.Now()
 		for i := 0; i < 100000; i++ {
 			orderP := &OrderPayload{
-				Timestamp: time.Now().Unix(),
-				Market:    "BTC-USD-PERP",
-				Side:      "BUY",
+				Timestamp: time.Now().UnixMilli(),
+				Market:    "ETH-USD-PERP",
+				Side:      "SELL",
 				OrderType: "LIMIT",
-				Size:      strconv.Itoa(20 + i),
-				Price:     strconv.Itoa(1900 + i),
+				Size:      strconv.Itoa(4 + i),
+				Price:     strconv.Itoa(5900 + i),
 			}
 			messageHash, _ := GnarkGetMessageHash(td, domEnc, accountAddress, orderP, sc)
 			sigBin, err := privateKey.Sign(messageHash.Bytes(), nil)
 			if err != nil {
-				fmt.Println(err)
+				Print("Error:", err)
 			}
 			valid, _ := privateKey.PublicKey.Verify(sigBin, messageHash.Bytes(), nil)
 			if !valid {
-				fmt.Println("Invalid signature")
+				Print("Invalid signature")
 			}
 		}
-		fmt.Println(time.Since(start).Seconds() / 100000)
+		Print("Average time taken:", time.Since(start).Seconds()/100000)
 	}
 }
 
@@ -252,8 +324,11 @@ func main() {
 		dexPrivateKey,
 	)
 
+	// Submit order using the JWT token
+	SubmitOrder(paradexConfig, dexAccountAddress, dexPrivateKey, jwtToken)
+
 	// Get account's open orders using the JWT token
 	openOrders := GetOpenOrders(jwtToken)
-	openOrdersByte, _ := json.Marshal(openOrders)
+	openOrdersByte, _ := json.MarshalIndent(openOrders, "", "    ")
 	Print(string(openOrdersByte))
 }

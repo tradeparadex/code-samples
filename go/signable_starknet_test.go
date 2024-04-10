@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 	"testing"
+	"time"
 
 	"github.com/consensys/gnark-crypto/ecc/stark-curve/ecdsa"
 
@@ -15,12 +16,12 @@ import (
 const StarknetChainID = "PRIVATE_SN_POTC_SEPOLIA" // TESTNET
 
 var orderPayload = &OrderPayload{
-	Timestamp: 1684815490129,
+	Timestamp: time.Now().UnixMilli(),
 	Market:    "ETH-USD-PERP",
-	Side:      "BUY",
+	Side:      "SELL",
 	OrderType: "LIMIT",
-	Size:      "2000000000",   // 20 * 10^8
-	Price:     "190000000000", // 1900 * 10^8
+	Size:      "4",
+	Price:     "5900",
 }
 var testAccountAddress = big.NewInt(0) // Replace with account address
 
@@ -123,14 +124,6 @@ func BenchmarkGnarkVerifySingleOrder(b *testing.B) {
 }
 
 func TestCompareMessageHash(b *testing.T) {
-	orderP := &OrderPayload{
-		Timestamp: 1684815490129,
-		Market:    "ETH-USD-PERP",
-		Side:      "SELL",
-		OrderType: "LIMIT",
-		Size:      "2000000000",   // 20 * 10^8
-		Price:     "190000000000", // 1900 * 10^8
-	}
 	priv, err := ecdsa.GenerateKey(rand.Reader)
 	pubX := big.NewInt(0)
 	pubX = priv.PublicKey.A.X.BigInt(pubX)
@@ -141,9 +134,9 @@ func TestCompareMessageHash(b *testing.T) {
 	domEnc, err := td.GetTypedMessageHash("StarkNetDomain", td.Domain, sc)
 	require.NoError(b, err)
 
-	hash, err := GnarkGetMessageHash(td, domEnc, pubX, orderP, sc)
+	hash, err := GnarkGetMessageHash(td, domEnc, pubX, orderPayload, sc)
 	require.NoError(b, err)
-	hash2, err := GetMessageHash(td, domEnc, pubX, orderP, sc)
+	hash2, err := GetMessageHash(td, domEnc, pubX, orderPayload, sc)
 	require.NoError(b, err)
 	require.Equal(b, hash.String(), hash2.String())
 }
