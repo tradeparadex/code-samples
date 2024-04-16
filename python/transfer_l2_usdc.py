@@ -5,15 +5,16 @@ import os
 from starknet_py.contract import Contract
 
 from helpers.account import Account
-
+from shared.api_client import get_paradex_config
 from utils import (
     get_account,
     get_paradex_account_address,
-    get_paradex_config,
     get_proxy_config,
     get_random_max_fee,
     hex_to_int,
 )
+
+paradex_http_url = "https://api.testnet.paradex.trade/v1"
 
 # Transfer USDC from old Paradex account to new Paradex account
 async def paraclear_transfer(
@@ -107,7 +108,7 @@ async def paraclear_transfer(
 
 async def main(old_paradex_account_private_key_hex, new_paradex_account_private_key_hex) -> None:
     # Load Paradex config
-    paradex_config = await get_paradex_config()
+    paradex_config = await get_paradex_config(paradex_http_url)
 
     # Get Paradex account addresses
     old_paradex_account_address = get_paradex_account_address(

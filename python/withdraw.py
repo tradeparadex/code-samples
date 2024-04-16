@@ -13,18 +13,18 @@ from starknet_py.contract import Contract
 from starknet_py.net.client import Client
 
 from helpers.account import Account
-
+from shared.api_client import get_paradex_config
 from utils import (
     generate_paradex_account,
     get_account,
     get_l1_eth_account,
-    get_paradex_config,
     get_proxy_config,
     get_random_max_fee,
     hex_to_int,
     wait_for_tx,
 )
 
+paradex_http_url = "https://api.testnet.paradex.trade/v1"
 
 async def withdraw_from_paraclear(
     l1_recipient: str, amount: int, config: Dict, account: Account
@@ -113,7 +113,7 @@ async def main(eth_private_key_hex: str) -> None:
     w3, eth_account = get_l1_eth_account(eth_private_key_hex)
 
     # Load Paradex config
-    paradex_config = await get_paradex_config()
+    paradex_config = await get_paradex_config(paradex_http_url)
 
     # Generate Paradex account (only local)
     paradex_account_address, paradex_account_private_key_hex = generate_paradex_account(
