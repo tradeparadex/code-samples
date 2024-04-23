@@ -40,22 +40,6 @@ from helpers.account import Account
 paradex_http_url = "https://api.testnet.paradex.trade/v1"
 
 
-async def get_paradex_config() -> Dict:
-    logging.info("GET /system/config")
-    url = paradex_http_url + "/system/config"
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as response:
-            status_code: int = response.status
-            response: Dict = await response.json()
-            if status_code == 200:
-                logging.info(f"Success: {response}")
-            else:
-                logging.error(f"Status Code: {status_code}")
-                logging.error(f"Response Text: {response}")
-                logging.error("Unable to GET /system/config")
-    return response
-
-
 def build_auth_message(chainId: int, now: int, expiry: int) -> TypedData:
     message = {
         "message": {
