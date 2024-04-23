@@ -13,11 +13,11 @@ from utils import (
     generate_paradex_account,
     get_account,
     get_l1_eth_account,
-    get_paradex_config,
     sign_stark_key_message,
 )
 import pandas as pd
 from onboarding import get_jwt_token
+from shared.api_client import get_paradex_config
 
 class DecimalEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -69,7 +69,7 @@ async def main(eth_private_key_hex: str) -> None:
     _, eth_account = get_l1_eth_account(eth_private_key_hex)
 
     # Load Paradex config
-    paradex_config = await get_paradex_config()
+    paradex_config = await get_paradex_config(paradex_http_url)
 
     # Generate Paradex account (only local)
     paradex_account_address, paradex_account_private_key_hex = generate_paradex_account(

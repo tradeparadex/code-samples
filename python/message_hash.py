@@ -15,9 +15,9 @@ from starkware.cairo.lang.vm.crypto import pedersen_hash as default_hash
 from utils import (
     generate_paradex_account,
     get_l1_eth_account,
-    get_paradex_config,
 )
-
+from shared.api_client import get_paradex_config
+paradex_http_url = "https://api.testnet.paradex.trade/v1"
 # This is a very stripped down version of message hashing
 # Added notes around the code to explain what's going on
 
@@ -39,7 +39,7 @@ async def main(eth_private_key_hex: str) -> None:
     _, eth_account = get_l1_eth_account(eth_private_key_hex)
 
     # Load Paradex config
-    paradex_config = await get_paradex_config()
+    paradex_config = await get_paradex_config(paradex_http_url)
     chain = int_from_bytes(paradex_config["starknet_chain_id"].encode())
 
     # Generate Paradex account (only local)

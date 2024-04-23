@@ -4,7 +4,7 @@ import os
 import traceback
 
 import aiohttp
-from utils import get_paradex_config
+from shared.api_client import get_paradex_config
 from onboarding import get_jwt_token, get_open_orders, perform_onboarding
 from utils_hd import generate_paradex_account_from_ledger
 
@@ -13,7 +13,7 @@ paradex_http_url = "https://api.testnet.paradex.trade/v1"
 
 async def main(eth_account_address: str) -> None:
     # Load Paradex config
-    paradex_config = await get_paradex_config()
+    paradex_config = await get_paradex_config(paradex_http_url)
 
     # Generate Paradex account (from ledger)
     paradex_account_address, paradex_account_private_key_hex = generate_paradex_account_from_ledger(
