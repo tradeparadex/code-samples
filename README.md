@@ -84,4 +84,4 @@ On UI, after connecting with your Ethereum wallet, you will be able to click on
 the truncated L2 address (top right) and view you L1 and L2 address. As well as copy the
 L2 private key to clipboard.
 
-To get complete understanding of this, please refer to [Onboarding & Wallets](https://docs.paradex.trade/introduction/onboarding-and-wallets) section in Paradex documentation.
+To get complete understanding of this, please refer to [Onboarding & Wallets](https://docs.paradex.trade/getting-started/onboarding-and-wallets) section in Paradex documentation.
