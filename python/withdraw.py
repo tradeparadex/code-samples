@@ -25,6 +25,7 @@ from utils import (
 )
 
 paradex_http_url = "https://api.testnet.paradex.trade/v1"
+l2_bridge_version = 2
 
 async def withdraw_from_paraclear(
     l1_recipient: str, amount: int, config: Dict, account: Account
@@ -40,36 +41,39 @@ async def withdraw_from_paraclear(
     paraclear_contract = await Contract.from_address(
         provider=account, address=paraclear_address, proxy_config=get_proxy_config()
     )
-    logging.info(f"Paraclear Contract: {paraclear_contract}")
+    logging.info(f"Paraclear Contract: {hex(paraclear_contract.address)}")
 
     l2_bridge_contract = await Contract.from_address(
         provider=account, address=l2_bridge_address, proxy_config=get_proxy_config()
     )
-    logging.info(f"USDC Bridge Contract: {l2_bridge_contract}")
+    logging.info(f"USDC Bridge Contract: {hex(l2_bridge_contract.address)}")
 
     token_asset_bal = await paraclear_contract.functions["getTokenAssetBalance"].call(
         account=account.address, token_address=hex_to_int(usdc_address)
     )
     logging.info(
-        f"USDC balance on paraclear: {token_asset_bal.balance / 10**paraclear_decimals}"
+        f"USDC balance on Paraclear: {token_asset_bal.balance / 10**paraclear_decimals}"
     )
 
+    l1_recipient_arg = hex_to_int(l1_recipient)
+    l1_recipient_arg = (
+        {"address": l1_recipient_arg} if l2_bridge_version == 2 else l1_recipient_arg
+    )
     calls = [
-        paraclear_contract.functions["withdraw"].prepare(
+        paraclear_contract.functions["withdraw"].prepare_invoke_v1(
             token_address=hex_to_int(usdc_address),
             amount=amount * 10**paraclear_decimals,
         ),
-        l2_bridge_contract.functions["initiate_withdraw"].prepare(
-            l1_recipient=hex_to_int(l1_recipient),
+        l2_bridge_contract.functions["initiate_withdraw"].prepare_invoke_v1(
+            l1_recipient=l1_recipient_arg,
             amount=amount * 10**usdc_decimals,
         ),
     ]
-    withdraw_info = await account.execute(calls=calls, max_fee=get_random_max_fee())
+    withdraw_info = await account.execute_v1(calls=calls, max_fee=get_random_max_fee())
     withdraw_tx_hash = hex(withdraw_info.transaction_hash)
     logging.info(f"Waiting for withdraw to complete: {withdraw_tx_hash}")
     tx_status = await account.client.wait_for_tx(
         tx_hash=withdraw_info.transaction_hash,
-        wait_for_accept=True,
     )
     logging.info(f"L2 withdraw completed: {tx_status}")
 
@@ -78,7 +82,7 @@ async def withdraw_from_paraclear(
         provider=account, address=usdc_address, proxy_config=get_proxy_config()
     )
     usdc_bal = await usdc_contract.functions["balanceOf"].call(account=account.address)
-    logging.info(f"USDC L2 balance is {usdc_bal.balance / 10**usdc_decimals}")
+    logging.info(f"USDC L2 balance is {usdc_bal[0] / 10**usdc_decimals}")
 
     return account.client, withdraw_tx_hash
 

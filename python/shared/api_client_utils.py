@@ -3,16 +3,16 @@ import json
 import logging
 import os
 from decimal import Decimal
-from typing import Dict, List, Optional, Tuple
+from enum import IntEnum
+from typing import Optional, Tuple
 
 from eth_account.hdaccount import generate_mnemonic
 from eth_account.messages import encode_structured_data
 from .paradex_api_utils import Order
 from starknet_py.hash.address import compute_address
 from starknet_py.hash.selector import get_selector_from_name
-from starknet_py.net.gateway_client import GatewayClient
-from starknet_py.net.models import StarknetChainId
-from starknet_py.net.networks import CustomGatewayUrls, Network
+from starknet_py.net.full_node_client import FullNodeClient
+from starknet_py.common import int_from_bytes
 from starknet_py.net.signer.stark_curve_signer import KeyPair
 from starknet_py.utils.typed_data import TypedData
 from starkware.crypto.signature.signature import EC_ORDER
@@ -44,26 +44,23 @@ def is_token_expired(status_code: int, response: dict) -> bool:
     )
 
 
-# Network
-def network_from_base(base: str) -> Network:
-    return CustomGatewayUrls(
-        feeder_gateway_url=f'{base}/feeder_gateway', gateway_url=f'{base}/gateway'
-    )
+def get_chain_id(chain_id: str):
+    class CustomStarknetChainId(IntEnum):
+        PRIVATE_TESTNET = int_from_bytes(chain_id.encode("UTF-8"))
+    return CustomStarknetChainId.PRIVATE_TESTNET
 
 
-def get_account_client(
-    net: Network, chain: Optional[StarknetChainId], account_address: str, account_key: str
-) -> Account:
-    client = GatewayClient(net=net)
-    # logging.info(f"Accnt: {account_address} - {account_key}")
+def get_account(account_address: str, account_key: str, paradex_config: dict):
+    client = FullNodeClient(node_url=paradex_config["starknet_fullnode_rpc_url"])
     key_pair = KeyPair.from_private_key(key=int(account_key, 16))
-    account_client = Account(
+    chain = get_chain_id(paradex_config["starknet_chain_id"])
+    account = Account(
         client=client,
         address=account_address,
         key_pair=key_pair,
         chain=chain,
     )
-    return account_client
+    return account
 
 
 # Messages
