@@ -101,7 +101,7 @@ if __name__ == "__main__":
         datefmt="%Y-%m-%d %H:%M:%S",
     )
     # Load environment variables
-    eth_private_key_hex = ''
+    eth_private_key_hex = os.getenv('ETH_PRIVATE_KEY_HEX', '')
 
     # Run main
     try:
