@@ -520,7 +520,7 @@ async def deposit_to_paraclear(config: ApiConfig, amount: int) -> None:
     amount_paraclear = int(amount * 10 ** (8 - usdc_decimals))
     calls = [
         usdc_contract.functions["increaseAllowance"].prepare_invoke_v1(
-            spender=int(paraclear_address, 16), added_value=amount_usdc
+            spender=int(paraclear_address, 16), addedValue=amount_usdc
         ),
         paraclear_contract.functions["deposit"].prepare_invoke_v1(int(usdc_address, 16), amount_paraclear),
     ]

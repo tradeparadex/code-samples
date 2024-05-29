@@ -71,7 +71,7 @@ async def paraclear_transfer(
     # 4. Deposit USDC to Paraclear (new account)
     deposit_calls = [
         usdc_contract.functions["increaseAllowance"].prepare_invoke_v1(
-            spender=hex_to_int(paraclear_address), added_value=transfer_amount_usdc
+            spender=hex_to_int(paraclear_address), addedValue=transfer_amount_usdc
         ),
         paraclear_contract_new.functions["deposit"].prepare_invoke_v1(
             token_address=hex_to_int(usdc_address),
