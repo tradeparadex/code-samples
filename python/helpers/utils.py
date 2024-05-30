@@ -63,6 +63,5 @@ def verify_message_signature(
     Verifies ECDSA signature of a given message hash with a given public key.
     Returns true if public_key signs the message.
     """
-    sig_r, sig_s = signature
-    sig_w = pow(sig_s, -1, EC_ORDER)
-    return rs_verify(msg_hash=msg_hash, r=sig_r, s=sig_w, public_key=public_key)
+    r, s = signature
+    return rs_verify(msg_hash=msg_hash, r=r, s=s, public_key=public_key)
