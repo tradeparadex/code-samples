@@ -1,6 +1,7 @@
 import functools
 from typing import List, Optional, Sequence
 from starknet_py.constants import EC_ORDER
+from starkware.crypto.signature.signature import generate_k_rfc6979
 
 from starknet_crypto_py import (
     get_public_key as rs_get_public_key,
@@ -44,12 +45,15 @@ def compute_hash_on_elements(data: Sequence) -> int:
 
 
 def message_signature(
-    msg_hash: int, priv_key: int, seed: Optional[int] = 32
+    msg_hash: int, priv_key: int, seed: Optional[int] = None
 ) -> tuple[int, int]:
     """
     Signs the message with private key.
     """
-    return rs_sign(private_key=priv_key, msg_hash=msg_hash, k=seed)
+    # k should be a strong cryptographical random
+    # See: https://tools.ietf.org/html/rfc6979
+    k = generate_k_rfc6979(msg_hash, priv_key, seed)
+    return rs_sign(private_key=priv_key, msg_hash=msg_hash, k=k)
 
 
 def verify_message_signature(
