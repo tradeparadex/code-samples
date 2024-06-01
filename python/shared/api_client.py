@@ -23,9 +23,8 @@ from .api_client_utils import (
     gen_and_save_recovery_phrase,
     generate_keys,
     get_acc_contract_address_and_call_data,
-    get_account_client,
+    get_account,
     is_token_expired,
-    network_from_base,
     onboarding_message,
     order_sign_message,
     stark_key_message,
@@ -35,8 +34,7 @@ from .paradex_api_utils import Order
 from starknet_py.common import int_from_bytes
 from starknet_py.contract import Contract
 from starknet_py.net.signer.stark_curve_signer import KeyPair
-from starknet_py.utils.typed_data import TypedData
-from .starknet_utils import CustomStarknetChainId, get_proxy_config
+from .starknet_utils import get_proxy_config
 from web3.auto import w3
 
 from helpers.account import Account
@@ -487,17 +485,10 @@ def starknet_account(config: ApiConfig) -> Account:
     if config.starknet_account is not None:
         return config.starknet_account
 
-    net = network_from_base(config.paradex_config["starknet_gateway_url"])
-    chain = CustomStarknetChainId(
-        int_from_bytes(config.paradex_config["starknet_chain_id"].encode())
-    )
-    logging.info(f"net: {net}")
-    logging.info(f"chain: {chain}")
-    account = get_account_client(
-        net=net,
-        chain=chain,
+    account = get_account(
         account_address=config.paradex_account,
         account_key=config.paradex_account_private_key,
+        paradex_config=config.paradex_config,
     )
     config.starknet_account = account
     return account
@@ -517,7 +508,7 @@ async def deposit_to_paraclear(config: ApiConfig, amount: int) -> None:
     paraclear_contract = await Contract.from_address(
         provider=account, address=paraclear_address, proxy_config=get_proxy_config()
     )
-    logging.info(f"Paraclear Contract: {paraclear_contract}")
+    logging.info(f"Paraclear Contract: {hex(paraclear_contract.address)}")
     usdc_address = config.paradex_config["bridged_tokens"][0]["l2_token_address"]
     usdc_decimals = config.paradex_config["bridged_tokens"][0]["decimals"]
     usdc_contract = await Contract.from_address(
@@ -528,13 +519,13 @@ async def deposit_to_paraclear(config: ApiConfig, amount: int) -> None:
     amount_usdc = await get_usdc_balance(config)
     amount_paraclear = int(amount * 10 ** (8 - usdc_decimals))
     calls = [
-        usdc_contract.functions["increaseAllowance"].prepare(
-            spender=int(paraclear_address, 16), added_value=amount_usdc
+        usdc_contract.functions["increaseAllowance"].prepare_invoke_v1(
+            spender=int(paraclear_address, 16), addedValue=amount_usdc
         ),
-        paraclear_contract.functions["deposit"].prepare(int(usdc_address, 16), amount_paraclear),
+        paraclear_contract.functions["deposit"].prepare_invoke_v1(int(usdc_address, 16), amount_paraclear),
     ]
     logging.info(f"Allowance increase to paraclear completed: {calls}")
-    deposit_info = await account.execute(calls=calls, max_fee=int(5 * 1e17))
+    deposit_info = await account.execute_v1(calls=calls, max_fee=int(5 * 1e17))
     logging.info(f"Deposit Info: {deposit_info}")
     logging.info(f"Waiting for deposit to complete: {deposit_info.transaction_hash}")
     tx_status = await account.client.wait_for_tx(deposit_info.transaction_hash)
@@ -547,12 +538,9 @@ async def get_jwt_token(
 ) -> str:
     logging.info("get_jwt_token")
     token = ""
-    net = network_from_base(paradex_config["starknet_gateway_url"])
     chain = int_from_bytes(paradex_config["starknet_chain_id"].encode())
-    logging.info(f"net: {net}")
-    logging.info(f"chain: {hex(chain)}")
-    account = get_account_client(
-        net=net, chain=chain, account_address=account_address, account_key=private_key
+    account = get_account(
+        account_address=account_address, account_key=private_key, paradex_config=paradex_config
     )
     now = int(time.time())
     expiry = now + 24 * 60 * 60
@@ -590,12 +578,10 @@ async def onboarding(
     private_key: str,
     ethereum_account: str,
 ) -> str:
-    net = network_from_base(paradex_config["starknet_gateway_url"])
     chain = int_from_bytes(paradex_config["starknet_chain_id"].encode())
-    print("net", net)
     print("chain", hex(chain))
-    account = get_account_client(
-        net=net, chain=chain, account_address=account_address, account_key=private_key
+    account = get_account(
+        account_address=account_address, account_key=private_key, paradex_config=paradex_config
     )
     message = onboarding_message(chain)
 

@@ -36,7 +36,7 @@ async def paraclear_transfer(
     )
 
     # Set transfer amount to available balance if not specified
-    if (transfer_amount == None):
+    if (transfer_amount is None):
         old_acc_token_asset_bal = await paraclear_contract.functions["getTokenAssetBalance"].call(
             account=old_account.address, token_address=hex_to_int(usdc_address)
         )
@@ -52,16 +52,16 @@ async def paraclear_transfer(
     # 1. Withdraw available USDC from Paraclear (old account)
     # 2. Transfer USDC to new account (old account -> new account)
     calls = [
-        paraclear_contract.functions["withdraw"].prepare(
+        paraclear_contract.functions["withdraw"].prepare_invoke_v1(
             token_address=hex_to_int(usdc_address),
             amount=transfer_amount_paraclear,
         ),
-        usdc_contract.functions["transfer"].prepare(
+        usdc_contract.functions["transfer"].prepare_invoke_v1(
             recipient=new_account.address,
             amount=transfer_amount_usdc,
         ),
     ]
-    transfer_info = await old_account.execute(calls=calls, max_fee=get_random_max_fee())
+    transfer_info = await old_account.execute_v1(calls=calls, max_fee=get_random_max_fee())
     transfer_tx_hash = hex(transfer_info.transaction_hash)
     logging.info(f"Waiting for transfer to complete: {transfer_tx_hash}")
     tx_status = await old_account.client.wait_for_tx(tx_hash=transfer_tx_hash)
@@ -70,15 +70,15 @@ async def paraclear_transfer(
     # 3. Increase USDC allowance for Paraclear (new account)
     # 4. Deposit USDC to Paraclear (new account)
     deposit_calls = [
-        usdc_contract.functions["increaseAllowance"].prepare(
-            spender=hex_to_int(paraclear_address), added_value=transfer_amount_usdc
+        usdc_contract.functions["increaseAllowance"].prepare_invoke_v1(
+            spender=hex_to_int(paraclear_address), addedValue=transfer_amount_usdc
         ),
-        paraclear_contract_new.functions["deposit"].prepare(
+        paraclear_contract_new.functions["deposit"].prepare_invoke_v1(
             token_address=hex_to_int(usdc_address),
             amount=transfer_amount_paraclear,
         )
     ]
-    deposit_info = await new_account.execute(calls=deposit_calls, max_fee=get_random_max_fee())
+    deposit_info = await new_account.execute_v1(calls=deposit_calls, max_fee=get_random_max_fee())
     deposit_tx_hash = hex(deposit_info.transaction_hash)
     logging.info(f"Waiting for deposit to complete: {deposit_tx_hash}")
     tx_status = await old_account.client.wait_for_tx(tx_hash=deposit_tx_hash)

@@ -19,17 +19,15 @@ from starknet_py.hash.address import compute_address
 from starknet_py.hash.selector import get_selector_from_name
 from starknet_py.net.client import Client
 from starknet_py.net.client_errors import ClientError
-from starknet_py.net.client_models import Call, Hash, TransactionStatus
-from starknet_py.net.gateway_client import GatewayClient
+from starknet_py.net.client_models import Call, Hash, TransactionExecutionStatus, TransactionFinalityStatus
+from starknet_py.net.full_node_client import FullNodeClient
 from starknet_py.net.models import Address
-from starknet_py.net.networks import CustomGatewayUrls, Network
 from starknet_py.net.signer.stark_curve_signer import KeyPair
 from starknet_py.proxy.contract_abi_resolver import ProxyConfig
 from starknet_py.proxy.proxy_check import ArgentProxyCheck, OpenZeppelinProxyCheck, ProxyCheck
 from starknet_py.transaction_errors import (
-    TransactionFailedError,
+    TransactionRevertedError,
     TransactionNotReceivedError,
-    TransactionRejectedError,
 )
 from starknet_py.utils.typed_data import TypedData
 from starkware.crypto.signature.signature import EC_ORDER
@@ -195,13 +193,6 @@ def generate_paradex_account(
     return paradex_account_address, paradex_account_private_key_hex
 
 
-# Network
-def network_from_base(base: str) -> Network:
-    return CustomGatewayUrls(
-        feeder_gateway_url=f'{base}/feeder_gateway', gateway_url=f'{base}/gateway'
-    )
-
-
 def get_chain_id(chain_id: str):
     class CustomStarknetChainId(IntEnum):
         PRIVATE_TESTNET = int_from_bytes(chain_id.encode("UTF-8"))
@@ -209,8 +200,7 @@ def get_chain_id(chain_id: str):
 
 
 def get_account(account_address: str, account_key: str, paradex_config: dict):
-    net = network_from_base(paradex_config["starknet_gateway_url"])
-    client = GatewayClient(net=net)
+    client = FullNodeClient(node_url=paradex_config["starknet_fullnode_rpc_url"])
     key_pair = KeyPair.from_private_key(key=hex_to_int(account_key))
     chain = get_chain_id(paradex_config["starknet_chain_id"])
     account = Account(
@@ -278,7 +268,7 @@ class StarkwareETHProxyCheck(ProxyCheck):
 # Method tweaked to wait for `ACCEPTED_ON_L1` status
 async def wait_for_tx(
     client: Client, tx_hash: Hash, check_interval=5
-) -> Tuple[int, TransactionStatus]:
+) -> Tuple[int, TransactionFinalityStatus]:
     """
     Awaits for transaction to get accepted or at least pending by polling its status
 
@@ -290,29 +280,19 @@ async def wait_for_tx(
     if check_interval <= 0:
         raise ValueError("Argument check_interval has to be greater than 0.")
 
-    first_run = True
     try:
         while True:
             result = await client.get_transaction_receipt(tx_hash=tx_hash)
-            status = result.status
 
-            if status == TransactionStatus.ACCEPTED_ON_L1:
+            if result.execution_status == TransactionExecutionStatus.REVERTED:
+                raise TransactionRevertedError(
+                    message=result.revert_reason,
+                )
+
+            if result.finality_status == TransactionFinalityStatus.ACCEPTED_ON_L1:
                 assert result.block_number is not None
-                return result.block_number, status
-            elif status == TransactionStatus.REJECTED:
-                raise TransactionRejectedError(
-                    message=result.rejection_reason,
-                )
-            elif status == TransactionStatus.NOT_RECEIVED:
-                if not first_run:
-                    raise TransactionNotReceivedError()
-            elif status != TransactionStatus.RECEIVED:
-                # This will never get executed with current possible transactions statuses
-                raise TransactionFailedError(
-                    message=result.rejection_reason,
-                )
+                return result.block_number, result.finality_status
 
-            first_run = False
             await asyncio.sleep(check_interval)
     except asyncio.CancelledError as exc:
         raise TransactionNotReceivedError from exc
