@@ -6,7 +6,7 @@ import traceback
 from decimal import Decimal
 from shared.api_config import ApiConfig
 from shared.paradex_api_utils import Order, OrderSide, OrderType
-from shared.api_client import get_jwt_token, get_paradex_config, post_order_payload, sign_order
+from shared.api_client import get_jwt_token, post_order_payload, sign_order
 
 from utils import (
     generate_paradex_account,
@@ -56,22 +56,14 @@ if __name__ == "__main__":
         format="%(asctime)s.%(msecs)03d | %(levelname)s | %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
-
     # Load environment variables
-    config = ApiConfig()
-    config.paradex_http_url = "https://api.testnet.paradex.trade/v1"
-    # Requires
-    ###
-    # WEB3_INFURA_PROJECT_ID
-    # ETHEREUM_PRIVATE_KEY
-    ###
+    eth_address = os.getenv("ETHEREUM_ADDRESS", "")
+    eth_private_key = os.getenv("ETHEREUM_PRIVATE_KEY", "")
 
     # Run main
     try:
         loop = asyncio.get_event_loop()
-        # Load paradex config
-        config.paradex_config = loop.run_until_complete(get_paradex_config(config.paradex_http_url))
-        loop.run_until_complete(main(config))
+        loop.run_until_complete(main(eth_address, eth_private_key))
     except Exception as e:
         logging.error("Local Main Error")
         logging.error(e)
