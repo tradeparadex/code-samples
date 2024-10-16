@@ -1,12 +1,11 @@
-# Paraclear Balance Checker
+# Paraclear Account Value Checker
 
-This repository contains a Python script designed to interact with a Starkware-based smart contract to retrieve balance and account information, including token and perpetual asset balances. Specifically, it retrieves data for USDC tokens and margin health checks for an account on Paradex
+This repository contains a Python script designed to interact with a Starkware-based smart contract to retrieve account value information, including perpetual asset balances. Specifically, it retrieves margin health checks data for an account on Paradex
 
 ## Features
 
 - Retrieves account value
 - Checks account health (Initial Margin and Maintenance Margin)
-- Displays token balance (USDC)
 - Lists perpetual balances for available markets
 
 ## Prerequisites
@@ -34,7 +33,6 @@ This repository contains a Python script designed to interact with a Starkware-b
    - `BASE_API_URL`: Base URL for the API
    - `FULL_NODE_URL`: URL of the StarkNet full node
    - `PARACLEAR_ADDRESS`: Address of the Paraclear contract
-   - `USDC_TOKEN_ADDRESS`: Address of the USDC token contract
    - `PRDX_API_URL`: URL for the PRDX API
    - `L2_ADDRESS`: The StarkNet L2 address you want to check
 
@@ -46,14 +44,12 @@ This repository contains a Python script designed to interact with a Starkware-b
     - `starknet_gateway_url` to `STRK_API_URL`
     - `paradex api url` to `PRDX_API_URL`
     - `starknet_fullnode_rpc_url` to `FULL_NODE_URL`
-    - `bridged_token > l2_token_address` to `USDC_TOKEN_ADDRESS`
 
     Example (Production) : 
     - `STRK_API_URL` = "https://paraclear-mainnet.starknet.io"
     - `PRDX_API_URL` = "https://api.prod.paradex.trade/v1"
     - `FULL_NODE_URL` = "https://juno.api.prod.paradex.trade/rpc/v0_7"
     - `PARACLEAR_ADDRESS` = "0x3ca9388f8d4e04adecbd7b06b9b24a33030a593522248a7bddd87afc0b61a0c"
-    - `USDC_TOKEN_ADDRESS` = "0x7348407ebad690fec0cc8597e87dc16ef7b269a655ff72587dafff83d462be2"
 
 ## Usage
 

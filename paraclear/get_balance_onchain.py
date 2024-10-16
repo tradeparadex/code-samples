@@ -40,7 +40,6 @@ STRK_API_URL = os.getenv("STRK_API_URL")
 PRDX_API_URL = os.getenv("PRDX_API_URL")
 FULL_NODE_URL = os.getenv("FULL_NODE_URL")
 PARACLEAR_ADDRESS = os.getenv("PARACLEAR_ADDRESS")
-USDC_TOKEN_ADDRESS = os.getenv("USDC_TOKEN_ADDRESS")
 L2_ADDRESS = os.getenv("L2_ADDRESS")
 
 
@@ -186,14 +185,6 @@ async def get_balance(target_address: str):
     print("Loading Paraclear contract...")
     paraclear_contract = await load_contract(PARACLEAR_ADDRESS, client=client)
     print("Paraclear contract loaded")
-    print("Getting USDC contract...")
-    usdc_contract = await load_contract(USDC_TOKEN_ADDRESS, client=client)
-    print("USDC contract loaded")
-    print(usdc_contract.__dict__)
-
-    token_asset_bal = await paraclear_contract.functions["getTokenAssetBalance"].call(
-       account=target_address_int, token_address=int_16(USDC_TOKEN_ADDRESS)
-    )
 
     acc_value_call = await paraclear_contract.functions["getAccountValue"].call(
         account=target_address_int
@@ -212,10 +203,6 @@ async def get_balance(target_address: str):
         margin_check_type=MarginCheckType.MAINTENANCE.value
     )
 
-    token_asset_bal = await paraclear_contract.functions["getTokenAssetBalance"].call(
-        account=target_address_int,
-        token_address=int_16(USDC_TOKEN_ADDRESS)
-    )
     print("------------------")
 
     print(f"Account: {target_address}")
@@ -225,7 +212,6 @@ async def get_balance(target_address: str):
     print(f"Account value: {to_decimal(acc_value_call.account_value)}")
     print(f"Account healthy (IM): {bool(im_health_check_call.is_healthy)}")
     print(f"Account healthy (MM): {bool(mm_health_check_call.is_healthy)}")
-    print(f"Token balance: {to_decimal(token_asset_bal.balance, decimals=USDC_QUANTUMS)}")
     print("------------------\n")
     print("Perpetual balances:")
 
