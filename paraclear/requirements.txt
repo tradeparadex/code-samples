@@ -1,0 +1,4 @@
+asyncio
+requests
+rich
+starknet_py
