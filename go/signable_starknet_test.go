@@ -89,7 +89,7 @@ func BenchmarkGnarkSignSingleOrder(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		hash, err = GnarkGetMessageHash(td, domEnc, testAccountAddress, orderPayload, sc)
 		require.NoError(b, err)
-		sig, err := priv.Sign(hash.Bytes(), nil)
+		sig, err = priv.Sign(hash.Bytes(), nil)
 		require.NoError(b, err)
 		valid, err := priv.PublicKey.Verify(sig, hash.Bytes(), nil)
 		require.Truef(b, valid, "signature is invalid: %v", err)

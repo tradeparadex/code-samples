@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,6 +12,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/consensys/gnark-crypto/ecc"
 	starkcurve "github.com/consensys/gnark-crypto/ecc/stark-curve"
 	"github.com/consensys/gnark-crypto/ecc/stark-curve/ecdsa"
 	"github.com/consensys/gnark-crypto/ecc/stark-curve/fr"
@@ -47,9 +49,15 @@ func GetEthereumAccount() (string, string) {
 	return ethPrivateKey, ethAddress
 }
 
-// TODO: Generate Paradex private key from Ethereum private key
+// Generate Paradex private key from Ethereum private key
 func GenerateParadexAccount(config SystemConfigResponse, ethPrivateKey string) (string, string, string) {
-	dexPrivateKey := os.Getenv("PARADEX_PRIVATE_KEY")
+	privateKey, _ := crypto.HexToECDSA(ethPrivateKey)
+	ethSignature, _ := SignTypedData(typedData, privateKey)
+	// Convert the first 32 bytes of ethSignature to a hex string
+	r := hex.EncodeToString(ethSignature[:32])
+	// Get Starknet curve order
+	n := ecc.STARK_CURVE.ScalarField()
+	dexPrivateKey := GrindKey(r, n)
 	dexPrivateKeyBN := types.HexToBN(dexPrivateKey)
 	dexPublicKeyBN, _, _ := caigo.Curve.PrivateToPoint(dexPrivateKeyBN)
 	dexPublicKey := types.BigToHex(dexPublicKeyBN)
