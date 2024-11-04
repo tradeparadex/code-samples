@@ -30,16 +30,11 @@ print("Trying to load .env file...")
 load_dotenv()
 print(".env file loaded (if it exists)")
 
-# Debug: Print all environment variables
-for key, value in os.environ.items():
-    print(f"{key}: {value}")
-
-# Environment variables
-# TODO: Get from /config
 STRK_API_URL = os.getenv("STRK_API_URL")
 PRDX_API_URL = os.getenv("PRDX_API_URL")
 FULL_NODE_URL = os.getenv("FULL_NODE_URL")
 PARACLEAR_ADDRESS = os.getenv("PARACLEAR_ADDRESS")
+USDC_TOKEN_ADDRESS = os.getenv("USDC_TOKEN_ADDRESS")
 L2_ADDRESS = os.getenv("L2_ADDRESS")
 
 
@@ -104,7 +99,6 @@ class StarkwareETHProxyCheck(ProxyCheck):
             calldata=[],
         )
 
-
 def as_int(value: int) -> int:
     """
     Returns the lift of the given field element, val, as an integer
@@ -151,8 +145,6 @@ def get_markets_from_api():
     headers = {"Accept": "application/json"}
     try:
         resp = requests.get(f"{PRDX_API_URL}/markets", headers=headers)
-        # Print status code and response content for debugging
-        print(f"Status Code: {resp.status_code}")
         
         # Raise an exception for bad status codes
         resp.raise_for_status()
@@ -185,6 +177,13 @@ async def get_balance(target_address: str):
     print("Loading Paraclear contract...")
     paraclear_contract = await load_contract(PARACLEAR_ADDRESS, client=client)
     print("Paraclear contract loaded")
+    print("Getting USDC contract...")
+    usdc_contract = await load_contract(USDC_TOKEN_ADDRESS, client=client)
+    print("USDC contract loaded")
+
+    token_asset_bal = await paraclear_contract.functions["getTokenAssetBalance"].call(
+       account=target_address_int, token_address=int_16(USDC_TOKEN_ADDRESS)
+    )
 
     acc_value_call = await paraclear_contract.functions["getAccountValue"].call(
         account=target_address_int
@@ -203,6 +202,11 @@ async def get_balance(target_address: str):
         margin_check_type=MarginCheckType.MAINTENANCE.value
     )
 
+    token_asset_bal = await paraclear_contract.functions["getTokenAssetBalance"].call(
+        account=target_address_int,
+        token_address=int_16(USDC_TOKEN_ADDRESS)
+    )
+
     print("------------------")
 
     print(f"Account: {target_address}")
@@ -212,24 +216,8 @@ async def get_balance(target_address: str):
     print(f"Account value: {to_decimal(acc_value_call.account_value)}")
     print(f"Account healthy (IM): {bool(im_health_check_call.is_healthy)}")
     print(f"Account healthy (MM): {bool(mm_health_check_call.is_healthy)}")
+    print(f"Token balance: {to_decimal(token_asset_bal.balance, decimals=USDC_QUANTUMS)}")
     print("------------------\n")
-    print("Perpetual balances:")
-
-    markets = get_markets_from_api()
-
-    for market_str in markets:
-        perpetual_asset_bal = await paraclear_contract.functions[
-            "getPerpetualAssetBalance"
-        ].call(account=target_address_int, market=market_str)
-        perp_bal = PerpetualAssetBalance(
-            market=market_str,
-            amount=to_decimal(perpetual_asset_bal.balance["amount"]),
-            cost=to_decimal(perpetual_asset_bal.balance["cost"]),
-            cached_funding=to_decimal(perpetual_asset_bal.balance["cached_funding"]),
-        )
-        print(
-            f"{perp_bal.market}:\n\tamount: {perp_bal.amount}\n\tcost: {perp_bal.cost}\n\tcached_funding: {perp_bal.cached_funding}",
-        )
 
 
 async def main():
