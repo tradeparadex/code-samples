@@ -5,7 +5,7 @@
 All commands below are to be run from `typescript` directory.
 
 To run it directly, ensure [nvm 0.39+](https://github.com/nvm-sh/nvm) is installed.
-Before proceeding, please be sure to have your Paradex Account (ACCOUNT_ADDRESS), your Ethereum Account and look up your Paradex Account PUBLIC_KEY[^1]
+Before proceeding, please be sure to have your Paradex Account (ACCOUNT_ADDRESS), your Ethereum Account and look up your Paradex Account PUBLIC_KEY[^1] and PRIVATE_KEY[^2]
 Environment variables:
 
 ```bash
@@ -34,3 +34,5 @@ yarn run bench
 ```
 ---
 [^1]: To find this value go to https://voyager.prod.paradex.trade/, search for your Paradex Account, and under Contract data choose the *getSigner* function from Read Contract
+[^2]: This is available directly in Paradex. **PLEASE NEVER SHARE THIS WITH ANYONE EVEN IF THEY SAY THEY WORK FOR PARADEX**
+
