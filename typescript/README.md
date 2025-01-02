@@ -6,6 +6,7 @@ All commands below are to be run from `typescript` directory.
 
 To run it directly, ensure [nvm 0.39+](https://github.com/nvm-sh/nvm) is installed.
 Before proceeding, please be sure to have your Paradex Account (ACCOUNT_ADDRESS), your Ethereum Account and look up your Paradex Account PUBLIC_KEY[^1] and PRIVATE_KEY[^2]
+
 Environment variables:
 
 ```bash
