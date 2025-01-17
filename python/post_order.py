@@ -21,7 +21,7 @@ def build_order(config: ApiConfig, order_type: OrderType, order_side: OrderSide,
         order_side=order_side,
         size=size,
         client_id=client_id,
-        signature_timestamp=int(time.time()),
+        signature_timestamp=int(time.time()*1000),
     )
     sig = sign_order(config, order)
     order.signature = sig
