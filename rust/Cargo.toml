@@ -1,0 +1,11 @@
+[package]
+name = "sample"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+log = "0.4.25"
+paradex = "0.1.3"
+rust_decimal = "1.36.0"
+simple_logger = "5.0.0"
+tokio = "1.43.0"
