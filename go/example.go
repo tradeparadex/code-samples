@@ -328,13 +328,12 @@ func main() {
 		dexAccountAddress,
 		dexPrivateKey,
 	)
-	fmt.Println("jwt token", jwtToken)
 
 	// Submit order using the JWT token
-	// SubmitOrder(paradexConfig, dexAccountAddress, dexPrivateKey, jwtToken)
+	SubmitOrder(paradexConfig, dexAccountAddress, dexPrivateKey, jwtToken)
 
-	// // Get account's open orders using the JWT token
-	// openOrders := GetOpenOrders(jwtToken)
-	// openOrdersByte, _ := json.MarshalIndent(openOrders, "", "    ")
-	// Print(string(openOrdersByte))
+	// Get account's open orders using the JWT token
+	openOrders := GetOpenOrders(jwtToken)
+	openOrdersByte, _ := json.MarshalIndent(openOrders, "", "    ")
+	Print(string(openOrdersByte))
 }
