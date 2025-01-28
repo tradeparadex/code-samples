@@ -9,12 +9,33 @@ import (
 	"math/big"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 
-	"github.com/dontpanicdao/caigo"
-	"github.com/dontpanicdao/caigo/types"
+	"github.com/NethermindEth/juno/core/felt"
+	caigo "github.com/NethermindEth/starknet.go/curve"
+	typed "github.com/NethermindEth/starknet.go/utils"
 )
 
+func strToFelt(str string) *felt.Felt {
+	var f = new(felt.Felt)
+	asciiRegexp := regexp.MustCompile(`^([[:graph:]]|[[:space:]]){1,31}$`)
+
+	if b, ok := new(big.Int).SetString(str, 0); ok {
+		f.SetBytes(b.Bytes())
+		return f
+	}
+	// TODO: revisit conversation on seperate 'ShortString' conversion
+	if asciiRegexp.MatchString(str) {
+		hexStr := hex.EncodeToString([]byte(str))
+		if b, ok := new(big.Int).SetString(hexStr, 16); ok {
+			f.SetBytes(b.Bytes())
+			return f
+		}
+	}
+
+	return f
+}
 func Print(str ...any) {
 	s := fmt.Sprintln(str...)
 	io.WriteString(os.Stdout, s)
@@ -41,15 +62,15 @@ func ParseGetOrders(res *http.Response) []*Order {
 }
 
 func ComputeAddress(config SystemConfigResponse, publicKey string) string {
-	publicKeyBN := types.HexToBN(publicKey)
+	publicKeyBN := typed.HexToBN(publicKey)
 
-	paraclearAccountHashBN := types.HexToBN(config.ParaclearAccountHash)
-	paraclearAccountProxyHashBN := types.HexToBN(config.ParaclearAccountProxyHash)
+	paraclearAccountHashBN := typed.HexToBN(config.ParaclearAccountHash)
+	paraclearAccountProxyHashBN := typed.HexToBN(config.ParaclearAccountProxyHash)
 
 	zero := big.NewInt(0)
-	initializeBN := types.GetSelectorFromName("initialize")
+	initializeBN := typed.GetSelectorFromName("initialize")
 
-	contractAddressPrefix := types.StrToFelt("STARKNET_CONTRACT_ADDRESS").Big()
+	contractAddressPrefix := typed.FeltToBigInt(strToFelt("STARKNET_CONTRACT_ADDRESS"))
 
 	constructorCalldata := []*big.Int{
 		paraclearAccountHashBN,
@@ -58,7 +79,7 @@ func ComputeAddress(config SystemConfigResponse, publicKey string) string {
 		publicKeyBN,
 		zero,
 	}
-	constructorCalldataHash, _ := caigo.Curve.ComputeHashOnElements(constructorCalldata)
+	constructorCalldataHash := caigo.ComputeHashOnElements(constructorCalldata)
 
 	address := []*big.Int{
 		contractAddressPrefix,
@@ -67,8 +88,8 @@ func ComputeAddress(config SystemConfigResponse, publicKey string) string {
 		paraclearAccountProxyHashBN,
 		constructorCalldataHash,
 	}
-	addressHash, _ := caigo.Curve.ComputeHashOnElements(address)
-	return types.BigToHex(addressHash)
+	addressHash := caigo.ComputeHashOnElements(address)
+	return typed.BigToHex(addressHash)
 }
 
 func GrindKey(keySeed string, keyValLimit *big.Int) string {

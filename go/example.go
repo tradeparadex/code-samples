@@ -12,12 +12,12 @@ import (
 	"strconv"
 	"time"
 
+	caigo "github.com/NethermindEth/starknet.go/curve"
+	typed "github.com/NethermindEth/starknet.go/utils"
 	"github.com/consensys/gnark-crypto/ecc"
 	starkcurve "github.com/consensys/gnark-crypto/ecc/stark-curve"
 	"github.com/consensys/gnark-crypto/ecc/stark-curve/ecdsa"
-	"github.com/consensys/gnark-crypto/ecc/stark-curve/fr"
-	"github.com/dontpanicdao/caigo"
-	"github.com/dontpanicdao/caigo/types"
+	"github.com/crate-crypto/go-ipa/bandersnatch/fr"
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
@@ -58,16 +58,16 @@ func GenerateParadexAccount(config SystemConfigResponse, ethPrivateKey string) (
 	// Get Starknet curve order
 	n := ecc.STARK_CURVE.ScalarField()
 	dexPrivateKey := GrindKey(r, n)
-	dexPrivateKeyBN := types.HexToBN(dexPrivateKey)
+	dexPrivateKeyBN := typed.HexToBN(dexPrivateKey)
 	dexPublicKeyBN, _, _ := caigo.Curve.PrivateToPoint(dexPrivateKeyBN)
-	dexPublicKey := types.BigToHex(dexPublicKeyBN)
+	dexPublicKey := typed.BigToHex(dexPublicKeyBN)
 	dexAccountAddress := ComputeAddress(config, dexPublicKey)
 	return dexPrivateKey, dexPublicKey, dexAccountAddress
 }
 
 // Get ECDSA private key from string
 func GetEcdsaPrivateKey(pk string) *ecdsa.PrivateKey {
-	privateKey := types.StrToFelt(pk).Big()
+	privateKey := typed.FeltToBigInt(strToFelt(pk))
 
 	// Generate public key
 	_, g := starkcurve.Generators()
@@ -102,15 +102,14 @@ func PerformOnboarding(
 	dexAccountAddress string,
 
 ) {
-	dexAccountAddressBN := types.HexToBN(dexAccountAddress)
+	dexAccountAddressBN := typed.HexToBN(dexAccountAddress)
 
 	// Get message hash and signature
-	sc := caigo.StarkCurve{}
 	message := &OnboardingPayload{Action: "Onboarding"}
 	typedData, _ := NewVerificationTypedData(VerificationTypeOnboarding, config.ChainId)
-	domEnc, _ := typedData.GetTypedMessageHash("StarkNetDomain", typedData.Domain, sc)
-	messageHash, _ := GnarkGetMessageHash(typedData, domEnc, dexAccountAddressBN, message, sc)
-	r, s, _ := GnarkSign(messageHash, dexPrivateKey)
+	typedData.Message = message
+	tdHash, _ := HashTypedData(dexAccountAddressBN, *typedData)
+	r, s, _ := GnarkSign(tdHash, dexPrivateKey)
 
 	// URL
 	onboardingUrl := fmt.Sprintf("%s/onboarding", PARADEX_HTTP_URL)
@@ -142,7 +141,7 @@ func GetJwtToken(
 	dexAccountAddress string,
 	dexPrivateKey string,
 ) string {
-	dexAccountAddressBN := types.HexToBN(dexAccountAddress)
+	dexAccountAddressBN := typed.HexToBN(dexAccountAddress)
 
 	// Get timestamp and expiration
 	now := time.Now().Unix()
@@ -150,18 +149,17 @@ func GetJwtToken(
 	expirationStr := strconv.FormatInt(now+DEFAULT_EXPIRY_IN_SECONDS, 10)
 
 	// Get message hash and signature
-	sc := caigo.StarkCurve{}
 	message := &AuthPayload{
 		Method:     "POST",
 		Path:       "/v1/auth",
 		Body:       "",
-		Timestamp:  timestampStr,
-		Expiration: expirationStr,
+		Timestamp:  now,
+		Expiration: now + DEFAULT_EXPIRY_IN_SECONDS,
 	}
 	typedData, _ := NewVerificationTypedData(VerificationTypeAuth, config.ChainId)
-	domEnc, _ := typedData.GetTypedMessageHash("StarkNetDomain", typedData.Domain, sc)
-	messageHash, _ := GnarkGetMessageHash(typedData, domEnc, dexAccountAddressBN, message, sc)
-	r, s, _ := GnarkSign(messageHash, dexPrivateKey)
+	typedData.Message = message
+	tdHash, _ := HashTypedData(dexAccountAddressBN, *typedData)
+	r, s, _ := GnarkSign(tdHash, dexPrivateKey)
 
 	// URL
 	authUrl := fmt.Sprintf("%s/auth", PARADEX_HTTP_URL)
@@ -218,11 +216,7 @@ func SubmitOrder(
 	dexPrivateKey string,
 	jwtToken string,
 ) {
-	dexAccountAddressBN := types.HexToBN(dexAccountAddress)
-
-	sc := caigo.StarkCurve{}
-	typedData, _ := NewVerificationTypedData("Order", config.ChainId)
-	domEnc, _ := typedData.GetTypedMessageHash("StarkNetDomain", typedData.Domain, sc)
+	dexAccountAddressBN := typed.HexToBN(dexAccountAddress)
 
 	// Change order values here
 	market := "ETH-USD-PERP"
@@ -240,8 +234,10 @@ func SubmitOrder(
 		Size:      size,
 		Price:     price,
 	}
-	messageHash, _ := GnarkGetMessageHash(typedData, domEnc, dexAccountAddressBN, orderPayload, sc)
-	r, s, _ := GnarkSign(messageHash, dexPrivateKey)
+	typedData, _ := NewVerificationTypedData("Order", config.ChainId)
+	typedData.Message = orderPayload
+	tdHash, _ := HashTypedData(dexAccountAddressBN, *typedData)
+	r, s, _ := GnarkSign(tdHash, dexPrivateKey)
 
 	// URL
 	ordersUrl := fmt.Sprintf("%s/orders", PARADEX_HTTP_URL)
@@ -274,12 +270,10 @@ func SubmitOrder(
 	Print("POST /orders:", res.Status)
 }
 
-func ExampleSignMultipleOrders() {
-	privateKey := GetEcdsaPrivateKey("X")
+func ExampleSignMultipleOrders(dexPrivateKey string) {
 	accountAddress := big.NewInt(0)
-	sc := caigo.StarkCurve{}
+	privateKey := GetEcdsaPrivateKey(dexPrivateKey)
 	td, _ := NewVerificationTypedData("Order", "PRIVATE_SN_POTC_SEPOLIA")
-	domEnc, _ := td.GetTypedMessageHash("StarkNetDomain", td.Domain, sc)
 
 	for j := 0; j < 10; j++ {
 		start := time.Now()
@@ -292,12 +286,15 @@ func ExampleSignMultipleOrders() {
 				Size:      strconv.Itoa(4 + i),
 				Price:     strconv.Itoa(5900 + i),
 			}
-			messageHash, _ := GnarkGetMessageHash(td, domEnc, accountAddress, orderP, sc)
-			sigBin, err := privateKey.Sign(messageHash.Bytes(), nil)
+			td.Message = orderP
+			tdHash, _ := HashTypedData(accountAddress, *td)
+			r, s, err := GnarkSign(tdHash, dexPrivateKey)
 			if err != nil {
 				Print("Error:", err)
 			}
-			valid, _ := privateKey.PublicKey.Verify(sigBin, messageHash.Bytes(), nil)
+			sigBin := r.Bytes()
+			sigBin = append(sigBin, s.Bytes()...)
+			valid, _ := privateKey.PublicKey.Verify(sigBin, tdHash.Bytes(), nil)
 			if !valid {
 				Print("Invalid signature")
 			}
@@ -331,12 +328,13 @@ func main() {
 		dexAccountAddress,
 		dexPrivateKey,
 	)
+	fmt.Println("jwt token", jwtToken)
 
 	// Submit order using the JWT token
-	SubmitOrder(paradexConfig, dexAccountAddress, dexPrivateKey, jwtToken)
+	// SubmitOrder(paradexConfig, dexAccountAddress, dexPrivateKey, jwtToken)
 
-	// Get account's open orders using the JWT token
-	openOrders := GetOpenOrders(jwtToken)
-	openOrdersByte, _ := json.MarshalIndent(openOrders, "", "    ")
-	Print(string(openOrdersByte))
+	// // Get account's open orders using the JWT token
+	// openOrders := GetOpenOrders(jwtToken)
+	// openOrdersByte, _ := json.MarshalIndent(openOrders, "", "    ")
+	// Print(string(openOrdersByte))
 }
