@@ -39,7 +39,7 @@ async def withdraw_from_paraclear(
     usdc_decimals = config["bridged_tokens"][0]["decimals"]
 
     paraclear_contract = await Contract.from_address(
-        provider=account, address=paraclear_address, proxy_config=get_proxy_config()
+        provider=account, address=paraclear_address, proxy_config=True
     )
     logging.info(f"Paraclear Contract: {hex(paraclear_contract.address)}")
 
@@ -52,7 +52,7 @@ async def withdraw_from_paraclear(
         account=account.address, token_address=hex_to_int(usdc_address)
     )
     logging.info(
-        f"USDC balance on Paraclear: {token_asset_bal.balance / 10**paraclear_decimals}"
+        f"USDC balance on Paraclear: {token_asset_bal[0] / 10**paraclear_decimals}"
     )
 
     l1_recipient_arg = hex_to_int(l1_recipient)
