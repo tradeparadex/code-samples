@@ -17,6 +17,7 @@ from utils import (
 from shared.api_client import get_paradex_config
 
 paradex_http_url = "https://api.testnet.paradex.trade/v1"
+# paradex_http_url = "https://api.prod.paradex.trade/v1"
 
 
 async def perform_onboarding(
