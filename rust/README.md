@@ -1,5 +1,8 @@
 # Examples - Rust
 
+> [!WARNING]
+> Examples utilize community SDK, use with caution
+
 This is a simple example demonstrating how to use the Paradex API in Rust to:
 
 - Connect to the testnet
@@ -7,7 +10,7 @@ This is a simple example demonstrating how to use the Paradex API in Rust to:
 - Subscribe to websocket feeds
 - Place a market order
 
-For more examples, see [here](https://github.com/tradeparadex/paradex-rs/tree/main/examples).
+For more examples, visit [snow-avocado/paradex-rs/examples](https://github.com/snow-avocado/paradex-rs/tree/main/examples).
 
 ## Prerequisites
 
