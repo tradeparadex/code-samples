@@ -1,6 +1,6 @@
 # StarkNet Message Hash
 
-Following are the payloads thar require a message hash for signature:
+Following are the payloads that require a message hash for signature:
 
 L1:
 
