@@ -29,7 +29,7 @@ groovy order.groovy
 What this example does:
 
 * Retrieves a JWT to be used to make requests to private endpoints of the API
-* Create a new market order using the JWT token from previous step
+* Creates a new market order using the JWT token from previous step
 
 ### Script notes
 
