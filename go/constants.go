@@ -5,3 +5,4 @@ const CONTENT_TYPE = "application/json"
 
 const DEFAULT_EXPIRY_IN_SECONDS = int64(30)
 const MAINNET_CHAIN_ID = 1
+const TESTNET_CHAIN_ID = 11155111
