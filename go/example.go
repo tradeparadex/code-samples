@@ -18,6 +18,7 @@ import (
 	"github.com/consensys/gnark-crypto/ecc/stark-curve/fr"
 	"github.com/dontpanicdao/caigo"
 	"github.com/dontpanicdao/caigo/types"
+	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
@@ -52,7 +53,13 @@ func GetEthereumAccount() (string, string) {
 // Generate Paradex private key from Ethereum private key
 func GenerateParadexAccount(config SystemConfigResponse, ethPrivateKey string) (string, string, string) {
 	privateKey, _ := crypto.HexToECDSA(ethPrivateKey)
+	l1Chain, _ := strconv.ParseInt(config.L1ChainId, 10, 64)
+
+	// Update the ChainId value in the typedData using config
+	typedData.Domain.ChainId = math.NewHexOrDecimal256(l1Chain)
+
 	ethSignature, _ := SignTypedData(typedData, privateKey)
+
 	// Convert the first 32 bytes of ethSignature to a hex string
 	r := hex.EncodeToString(ethSignature[:32])
 	// Get Starknet curve order
