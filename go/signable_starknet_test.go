@@ -31,16 +31,14 @@ func BenchmarkSignSingleOrder(b *testing.B) {
 	require.NoError(b, err)
 	td, err := NewVerificationTypedData(VerificationTypeOrder, StarknetChainID)
 	require.NoError(b, err)
-	sc := caigo.StarkCurve{}
-	domEnc, err := td.GetTypedMessageHash("StarkNetDomain", td.Domain, sc)
-	require.NoError(b, err)
+	td.Message = orderPayload
 
 	var r, s *big.Int
 	sum := big.NewInt(0)
 	b.ResetTimer()
 	var hash *big.Int
 	for i := 0; i < b.N; i++ {
-		hash, err = GetMessageHash(td, domEnc, testAccountAddress, orderPayload, sc)
+		hash, err = HashTypedData(testAccountAddress, *td)
 		require.NoError(b, err)
 		r, s, err = caigo.Curve.Sign(hash, priv)
 		require.NoError(b, err)
@@ -61,14 +59,12 @@ func BenchmarkVerifySingleOrder(b *testing.B) {
 	require.NoError(b, err)
 	td, err := NewVerificationTypedData(VerificationTypeOrder, StarknetChainID)
 	require.NoError(b, err)
-	sc := caigo.StarkCurve{}
-	domEnc, err := td.GetTypedMessageHash("StarkNetDomain", td.Domain, sc)
-	require.NoError(b, err)
+	td.Message = orderPayload
 
 	sum := big.NewInt(0)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		hash, err := GetMessageHash(td, domEnc, pubX, orderPayload, sc)
+		hash, err := HashTypedData(pubX, *td)
 		require.NoError(b, err)
 		sum = sum.Add(sum, hash)
 	}
@@ -79,17 +75,15 @@ func BenchmarkGnarkSignSingleOrder(b *testing.B) {
 	require.NoError(b, err)
 	td, err := NewVerificationTypedData(VerificationTypeOrder, StarknetChainID)
 	require.NoError(b, err)
-	sc := caigo.StarkCurve{}
-	domEnc, err := td.GetTypedMessageHash("StarkNetDomain", td.Domain, sc)
-	require.NoError(b, err)
+	td.Message = orderPayload
 	sum := big.NewInt(0)
 	b.ResetTimer()
 	var sig []byte
 	var hash *big.Int
 	for i := 0; i < b.N; i++ {
-		hash, err = GnarkGetMessageHash(td, domEnc, testAccountAddress, orderPayload, sc)
+		hash, err = HashTypedData(testAccountAddress, *td)
 		require.NoError(b, err)
-		sig, err = priv.Sign(hash.Bytes(), nil)
+		sig, err := priv.Sign(hash.Bytes(), nil)
 		require.NoError(b, err)
 		valid, err := priv.PublicKey.Verify(sig, hash.Bytes(), nil)
 		require.Truef(b, valid, "signature is invalid: %v", err)
@@ -105,17 +99,15 @@ func BenchmarkGnarkVerifySingleOrder(b *testing.B) {
 	require.NoError(b, err)
 	td, err := NewVerificationTypedData(VerificationTypeOrder, StarknetChainID)
 	require.NoError(b, err)
-	sc := caigo.StarkCurve{}
-	domEnc, err := td.GetTypedMessageHash("StarkNetDomain", td.Domain, sc)
-	require.NoError(b, err)
-	hash, err := GnarkGetMessageHash(td, domEnc, testAccountAddress, orderPayload, sc)
+	td.Message = orderPayload
+	hash, err := HashTypedData(testAccountAddress, *td)
 	require.NoError(b, err)
 	sig, err := priv.Sign(hash.Bytes(), nil)
 	require.NoError(b, err)
 	sum := big.NewInt(0)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		hash, err := GnarkGetMessageHash(td, domEnc, testAccountAddress, orderPayload, sc)
+		hash, err := HashTypedData(testAccountAddress, *td)
 		require.NoError(b, err)
 		valid, err := priv.PublicKey.Verify(sig, hash.Bytes(), nil)
 		require.Truef(b, valid, "signature is invalid: %v", err)
@@ -130,13 +122,11 @@ func TestCompareMessageHash(b *testing.T) {
 	require.NoError(b, err)
 	td, err := NewVerificationTypedData(VerificationTypeOrder, "PRIVATE_SN_POTC_SEPOLIA")
 	require.NoError(b, err)
-	sc := caigo.StarkCurve{}
-	domEnc, err := td.GetTypedMessageHash("StarkNetDomain", td.Domain, sc)
-	require.NoError(b, err)
+	td.Message = orderPayload
 
-	hash, err := GnarkGetMessageHash(td, domEnc, pubX, orderPayload, sc)
+	hash, err := HashTypedData(pubX, *td)
 	require.NoError(b, err)
-	hash2, err := GetMessageHash(td, domEnc, pubX, orderPayload, sc)
+	hash2, err := HashTypedData(pubX, *td)
 	require.NoError(b, err)
 	require.Equal(b, hash.String(), hash2.String())
 }
