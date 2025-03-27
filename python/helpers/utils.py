@@ -53,7 +53,7 @@ def message_signature(
     # k should be a strong cryptographical random
     # See: https://tools.ietf.org/html/rfc6979
     k = generate_k_rfc6979(msg_hash, priv_key, seed)
-    return rs_sign(private_key=priv_key, msg_hash=msg_hash, k=k)
+    return rs_sign(private_key=priv_key, msg_hash=msg_hash, seed=k)
 
 
 def verify_message_signature(
