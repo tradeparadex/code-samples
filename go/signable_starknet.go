@@ -5,16 +5,14 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/consensys/gnark-crypto/ecc/stark-curve/fp"
-	"github.com/dontpanicdao/caigo"
-	"github.com/dontpanicdao/caigo/types"
+	"github.com/NethermindEth/starknet.go/curve"
+	"github.com/NethermindEth/starknet.go/typed"
+	"github.com/NethermindEth/starknet.go/utils"
 	"github.com/shopspring/decimal"
-
-	pedersenhash "github.com/consensys/gnark-crypto/ecc/stark-curve/pedersen-hash"
 )
 
 var scaleX8Decimal = decimal.RequireFromString("100000000")
-var snMessageBigInt = types.UTF8StrToBig("StarkNet Message")
+var snMessageBigInt = utils.UTF8StrToBig("StarkNet Message")
 
 type OnboardingPayload struct {
 	Action string
@@ -22,7 +20,7 @@ type OnboardingPayload struct {
 
 func (o *OnboardingPayload) FmtDefinitionEncoding(field string) (fmtEnc []*big.Int) {
 	if field == "action" {
-		fmtEnc = append(fmtEnc, types.StrToFelt(o.Action).Big())
+		fmtEnc = append(fmtEnc, utils.UTF8StrToBig(o.Action))
 	}
 
 	return
@@ -32,24 +30,24 @@ type AuthPayload struct {
 	Method     string
 	Path       string
 	Body       string
-	Timestamp  string
-	Expiration string
+	Timestamp  int64
+	Expiration int64
 }
 
 func (o *AuthPayload) FmtDefinitionEncoding(field string) (fmtEnc []*big.Int) {
 	switch field {
 	case "method":
-		fmtEnc = append(fmtEnc, types.StrToFelt(o.Method).Big())
+		fmtEnc = append(fmtEnc, utils.UTF8StrToBig(o.Method))
 	case "path":
-		fmtEnc = append(fmtEnc, types.StrToFelt(o.Path).Big())
+		fmtEnc = append(fmtEnc, utils.UTF8StrToBig(o.Path))
 	case "body":
 		// this is required as types.StrToFelt("") returns nil, which seems to be an SN bug
 		fmtEnc = append(fmtEnc, big.NewInt(0))
 	case "timestamp":
-		fmtEnc = append(fmtEnc, types.StrToFelt(o.Timestamp).Big())
+		fmtEnc = append(fmtEnc, big.NewInt(o.Timestamp))
 	case "expiration":
-		if o.Expiration != "" {
-			fmtEnc = append(fmtEnc, types.StrToFelt(o.Expiration).Big())
+		if o.Expiration != 0 {
+			fmtEnc = append(fmtEnc, big.NewInt(o.Expiration))
 		}
 	}
 	return fmtEnc
@@ -86,45 +84,45 @@ func (o *OrderPayload) FmtDefinitionEncoding(field string) (fmtEnc []*big.Int) {
 	case "timestamp":
 		fmtEnc = append(fmtEnc, big.NewInt(o.Timestamp))
 	case "market":
-		fmtEnc = append(fmtEnc, types.StrToFelt(o.Market).Big())
+		fmtEnc = append(fmtEnc, utils.UTF8StrToBig(o.Market))
 	case "side":
 		side := OrderSide(o.Side).Get()
-		fmtEnc = append(fmtEnc, types.StrToFelt(side).Big())
+		fmtEnc = append(fmtEnc, utils.StrToBig(side))
 	case "orderType":
-		fmtEnc = append(fmtEnc, types.StrToFelt(o.OrderType).Big())
+		fmtEnc = append(fmtEnc, utils.UTF8StrToBig(o.OrderType))
 	case "size":
 		size := o.GetScaledSize()
-		fmtEnc = append(fmtEnc, types.StrToFelt(size).Big())
+		fmtEnc = append(fmtEnc, utils.StrToBig(size))
 	case "price":
 		price := o.GetScaledPrice()
-		fmtEnc = append(fmtEnc, types.StrToFelt(price).Big())
+		fmtEnc = append(fmtEnc, utils.StrToBig(price))
 	}
 
 	return fmtEnc
 }
 
-func domainDefinition() *caigo.TypeDef {
-	return &caigo.TypeDef{Definitions: []caigo.Definition{
+func domainDefinition() *typed.TypeDef {
+	return &typed.TypeDef{Definitions: []typed.Definition{
 		{Name: "name", Type: "felt"},
 		{Name: "chainId", Type: "felt"},
 		{Name: "version", Type: "felt"}}}
 }
 
-func domain(chainId string) *caigo.Domain {
-	return &caigo.Domain{
+func domain(chainId string) *typed.Domain {
+	return &typed.Domain{
 		Name:    "Paradex",
 		Version: "1",
 		ChainId: chainId,
 	}
 }
 
-func onboardingPayloadDefinition() *caigo.TypeDef {
-	return &caigo.TypeDef{Definitions: []caigo.Definition{
+func onboardingPayloadDefinition() *typed.TypeDef {
+	return &typed.TypeDef{Definitions: []typed.Definition{
 		{Name: "action", Type: "felt"}}}
 }
 
-func authPayloadDefinition() *caigo.TypeDef {
-	return &caigo.TypeDef{Definitions: []caigo.Definition{
+func authPayloadDefinition() *typed.TypeDef {
+	return &typed.TypeDef{Definitions: []typed.Definition{
 		{Name: "method", Type: "felt"},
 		{Name: "path", Type: "felt"},
 		{Name: "body", Type: "felt"},
@@ -132,8 +130,8 @@ func authPayloadDefinition() *caigo.TypeDef {
 		{Name: "expiration", Type: "felt"}}}
 }
 
-func orderPayloadDefinition() *caigo.TypeDef {
-	return &caigo.TypeDef{Definitions: []caigo.Definition{
+func orderPayloadDefinition() *typed.TypeDef {
+	return &typed.TypeDef{Definitions: []typed.Definition{
 		{Name: "timestamp", Type: "felt"},
 		{Name: "market", Type: "felt"},
 		{Name: "side", Type: "felt"},
@@ -142,28 +140,28 @@ func orderPayloadDefinition() *caigo.TypeDef {
 		{Name: "price", Type: "felt"}}}
 }
 
-func onboardingTypes() map[string]caigo.TypeDef {
-	return map[string]caigo.TypeDef{
+func onboardingTypes() map[string]typed.TypeDef {
+	return map[string]typed.TypeDef{
 		"StarkNetDomain": *domainDefinition(),
 		"Constant":       *onboardingPayloadDefinition(),
 	}
 }
 
-func authTypes() map[string]caigo.TypeDef {
-	return map[string]caigo.TypeDef{
+func authTypes() map[string]typed.TypeDef {
+	return map[string]typed.TypeDef{
 		"StarkNetDomain": *domainDefinition(),
 		"Request":        *authPayloadDefinition(),
 	}
 }
 
-func orderTypes() map[string]caigo.TypeDef {
-	return map[string]caigo.TypeDef{
+func orderTypes() map[string]typed.TypeDef {
+	return map[string]typed.TypeDef{
 		"StarkNetDomain": *domainDefinition(),
 		"Order":          *orderPayloadDefinition(),
 	}
 }
 
-func NewVerificationTypedData(vType VerificationType, chainId string) (*caigo.TypedData, error) {
+func NewVerificationTypedData(vType VerificationType, chainId string) (*typed.TypedData, error) {
 	if vType == VerificationTypeOnboarding {
 		return NewTypedData(onboardingTypes(), domain(chainId), "Constant")
 	}
@@ -179,64 +177,54 @@ func NewVerificationTypedData(vType VerificationType, chainId string) (*caigo.Ty
 // NewTypedData returns a caigo typed data that
 // will be used to hash the message. It needs to be the same
 // structure the FE sends to metamask snap when signing
-func NewTypedData(types map[string]caigo.TypeDef, domain *caigo.Domain, pType string) (*caigo.TypedData, error) {
-	typedData, err := caigo.NewTypedData(
+func NewTypedData(types map[string]typed.TypeDef, domain *typed.Domain, pType string) (*typed.TypedData, error) {
+	typedData, err := typed.NewTypedData(
 		types,
 		pType,
 		*domain,
 	)
 
 	if err != nil {
-		return nil, errors.New("failed to create typed data with caigo")
+		return nil, fmt.Errorf("failed to create typed data with caigo")
 	}
 
 	return &typedData, nil
 }
 
-func PedersenArray(elems []*big.Int) *big.Int {
-	fpElements := make([]*fp.Element, len(elems))
-	for i, elem := range elems {
-		fpElements[i] = new(fp.Element).SetBigInt(elem)
-	}
-	hash := pedersenhash.PedersenArray(fpElements...)
-	return hash.BigInt(new(big.Int))
-}
-
-func GetMessageHash(td *caigo.TypedData, domEnc *big.Int, account *big.Int, msg caigo.TypedMessage, sc caigo.StarkCurve) (hash *big.Int, err error) {
-	elements := []*big.Int{snMessageBigInt, domEnc, account, nil}
-
-	msgEnc, err := td.GetTypedMessageHash(td.PrimaryType, msg, sc)
+func HashStruct(inType string, typedData typed.TypedData, message typed.TypedMessage) (*big.Int, error) {
+	elements := []*big.Int{}
+	typeHash, err := typedData.GetTypeHash(inType)
 	if err != nil {
-		return hash, fmt.Errorf("could not hash message: %w", err)
+		return big.NewInt(0), fmt.Errorf("could not get type hash")
 	}
-	elements[3] = msgEnc
-	hash, err = sc.ComputeHashOnElements(elements)
-	return hash, err
-}
+	elements = append(elements, typeHash)
+	types := typedData.Types[inType]
 
-func GnarkGetMessageHash(td *caigo.TypedData, domEnc *big.Int, account *big.Int, msg caigo.TypedMessage, sc caigo.StarkCurve) (hash *big.Int, err error) {
-	msgEnc, err := GnarkGetTypedMessageHash(td, td.PrimaryType, msg)
-	if err != nil {
-		return nil, fmt.Errorf("could not hash message: %w", err)
-	}
-	elements := []*big.Int{snMessageBigInt, domEnc, account, msgEnc}
-	hash = PedersenArray(elements)
-	return hash, err
-}
-
-func GnarkGetTypedMessageHash(td *caigo.TypedData, inType string, msg caigo.TypedMessage) (hash *big.Int, err error) {
-	prim := td.Types[inType]
-	elements := make([]*big.Int, 0, len(prim.Definitions)+1)
-	elements = append(elements, prim.Encoding)
-
-	for _, def := range prim.Definitions {
-		if def.Type == "felt" {
-			fmtDefinitions := msg.FmtDefinitionEncoding(def.Name)
-			elements = append(elements, fmtDefinitions...)
+	for _, typeDef := range types.Definitions {
+		if typeDef.Type == "felt" {
+			enc := message.FmtDefinitionEncoding(typeDef.Name)
+			elements = append(elements, enc...)
 		} else {
 			panic("not felt")
 		}
 	}
-	hash = PedersenArray(elements)
-	return hash, err
+
+	return curve.ComputeHashOnElements(elements), nil
+}
+
+func HashTypedData(dexAccountBN *big.Int, typedData typed.TypedData) (*big.Int, error) {
+	elements := []*big.Int{snMessageBigInt}
+	domEnc, err := HashStruct("StarkNetDomain", typedData, typedData.Domain)
+	if err != nil {
+		return big.NewInt(0), fmt.Errorf("failed to encode domain")
+	}
+	elements = append(elements, domEnc)
+	elements = append(elements, dexAccountBN)
+	messageEnc, err := HashStruct(typedData.PrimaryType, typedData, typedData.Message)
+	if err != nil {
+		return big.NewInt(0), fmt.Errorf("failed to encode message")
+	}
+	elements = append(elements, messageEnc)
+
+	return curve.ComputeHashOnElements(elements), nil
 }
