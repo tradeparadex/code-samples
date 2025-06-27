@@ -1,13 +1,16 @@
 import aiohttp
 import asyncio
 import hashlib
+import json
 import logging
 import random
 import re
 import time
+import types
 from enum import IntEnum
 from typing import Callable, Dict, Optional, Tuple
 
+from aiohttp import ClientSession
 from eth_account.messages import encode_structured_data
 from eth_account.signers.local import LocalAccount
 from web3.auto import Web3, w3
@@ -21,6 +24,7 @@ from starknet_py.net.client import Client
 from starknet_py.net.client_errors import ClientError
 from starknet_py.net.client_models import Call, Hash, TransactionExecutionStatus, TransactionFinalityStatus
 from starknet_py.net.full_node_client import FullNodeClient
+from starknet_py.net.http_client import HttpMethod
 from starknet_py.net.models import Address
 from starknet_py.net.signer.stark_curve_signer import KeyPair
 from starknet_py.proxy.contract_abi_resolver import ProxyConfig
@@ -209,6 +213,35 @@ def get_account(account_address: str, account_key: str, paradex_config: dict):
         key_pair=key_pair,
         chain=chain,
     )
+
+    # Monkey patch of _make_request method of starknet.py client
+    # to inject http headers requested by Paradex full node:
+    # - PARADEX-STARKNET-ACCOUNT: account address signing the request
+    # - PARADEX-STARKNET-SIGNATURE: signature of the request
+    # - PARADEX-STARKNET-SIGNATURE-TIMESTAMP: timestamp of the signature
+    # - PARADEX-STARKNET-SIGNATURE-VERSION: version of the signature
+    async def monkey_patched_make_request(
+        self,
+        session: ClientSession,
+        address: str,
+        http_method: HttpMethod,
+        params: dict,
+        payload: dict,
+    ) -> dict:
+        json_payload = json.dumps(payload)
+        headers = account.fullnode_request_headers(chain, json_payload)
+
+        async with session.request(
+            method=http_method.value, url=address, params=params, json=payload, headers=headers
+        ) as request:
+            await self.handle_request_error(request)
+            return await request.json(content_type=None)
+
+    client._client._make_request = types.MethodType(
+        monkey_patched_make_request,
+        client._client
+    )
+
     return account
 
 
