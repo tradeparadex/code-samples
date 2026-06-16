@@ -72,8 +72,8 @@ func ComputeAddress(config SystemConfigResponse, publicKey string) string {
 }
 
 func GrindKey(keySeed string, keyValLimit *big.Int) string {
-	sha256EcMaxDigest := new(big.Int)
-	sha256EcMaxDigest.SetString("1 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000", 16)
+	// SHA256_EC_MAX_DIGEST is 2^256, the size of the SHA-256 output space.
+	sha256EcMaxDigest := new(big.Int).Lsh(big.NewInt(1), 256)
 	maxAllowedVal := new(big.Int).Sub(sha256EcMaxDigest, new(big.Int).Mod(sha256EcMaxDigest, keyValLimit))
 
 	i := 0
@@ -81,8 +81,8 @@ func GrindKey(keySeed string, keyValLimit *big.Int) string {
 	i++
 
 	// Make sure the produced key is divided by the Stark EC order, and falls within the range
-	// [0, maxAllowedVal).
-	for key.Cmp(maxAllowedVal) < 0 {
+	// [0, maxAllowedVal). Keep grinding while the key is out of range (>= maxAllowedVal).
+	for key.Cmp(maxAllowedVal) >= 0 {
 		key = hashKeyWithIndex(keySeed, i)
 		i++
 	}
@@ -92,15 +92,22 @@ func GrindKey(keySeed string, keyValLimit *big.Int) string {
 	return fmt.Sprintf("0x%x", result)
 }
 
+// paddedHex returns the hex string with a leading '0' prepended when its length
+// is odd, ensuring it decodes to a whole number of bytes.
+func paddedHex(h string) string {
+	if len(h)%2 != 0 {
+		return "0" + h
+	}
+	return h
+}
+
 func hashKeyWithIndex(keySeed string, index int) *big.Int {
 	// Remove '0x' prefix if present
 	key := strings.TrimPrefix(keySeed, "0x")
 
-	// Convert index to hex and pad to 2 bytes
-	indexHex := fmt.Sprintf("%02x", index)
-
-	// Combine key and index
-	data := key + indexHex
+	// Combine key and index, each padded to an even number of hex digits so the
+	// concatenation decodes cleanly to bytes (matching the reference padded_hex).
+	data := paddedHex(key) + paddedHex(fmt.Sprintf("%x", index))
 
 	// Decode hex string to bytes
 	dataBytes, err := hex.DecodeString(data)
